@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53e2d9aeabe8eab48b5b5ff4ea3ddfae, type: 3}
+  m_Name: Side
+  m_EditorClassIdentifier: Assembly-CSharp::ModulData
+  name: Side
+  prefab: {fileID: 4767888798581337671, guid: 7b0ded59e9cae1a44ac5d2a4f5b61478, type: 3}
+  pX:
+  - -1
+  nX:
+  - 0s
+  pY:
+  - -1
+  nY:
+  - V0_0
+  pZ:
+  - 2
+  nZ:
+  - 2

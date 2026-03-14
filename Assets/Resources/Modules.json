@@ -1,0 +1,51 @@
+{
+  "p0": {
+    "mesh_name": "air_module",
+    "mesh_rotation": 0,
+    "posX": "-1",
+    "negX": "-1",
+    "posY": "-1",
+    "negY": "-1",
+    "posZ": "-1",
+    "negZ": "-1",
+    "constrain_to": "",
+    "constrain_from": "",
+    "weight": 1,
+    "valid_neighbours": [
+      ["p0"],
+      ["p0", "p2"],
+      ["p0"],
+      ["p0", "p1", "p2"],
+      ["p0"],
+      ["p0"]
+    ]
+  },
+  "p1": {
+    "mesh_name": "plane_module",
+    "mesh_rotation": 0,
+    "posX": "1s",
+    "negX": "1s",
+    "posY": "-1",
+    "negY": "-1",
+    "posZ": "1s",
+    "negZ": "1s",
+    "constrain_to": "",
+    "constrain_from": "",
+    "weight": 1,
+    "valid_neighbours": [["p1", "p2"], ["p1"], ["p0"], ["p0"], ["p1"], ["p1"]]
+  },
+  "p2": {
+    "mesh_name": "plane_module",
+    "mesh_rotation": 0,
+    "posX": "-1",
+    "negX": "1s",
+    "posY": "-1",
+    "negY": "-1",
+    "posZ": "1s",
+    "negZ": "1s",
+    "constrain_to": "",
+    "constrain_from": "",
+    "weight": 1,
+    "valid_neighbours": [["p0"], ["p1"], ["p0"], ["p0"], ["p2"], ["p2"]]
+  }
+}
