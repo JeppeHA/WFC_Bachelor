@@ -32,10 +32,6 @@ public class WFC : MonoBehaviour
         Modules = moduleLoader.LoadModules();
         Debug.Log($"Loaded {Modules.Count} tiles");
 
-        // Find a specific tile by name
-        ModulData p0 = Modules.Find(t => t.name == "p0");
-        Debug.Log(p0.name);
-
         InitializeGrid();
         RunWFC();
         if (!contradictionFound)
@@ -45,25 +41,19 @@ public class WFC : MonoBehaviour
     }
     private void InitializeGrid()
     {
-        ModulData dirt = Modules.Find(m => m.name == "p1");
-        ModulData air = Modules.Find(m => m.name == "p0");
-
         grid = new Cell[width, height, length];
+
+        // First pass: fill every cell with all modules
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
                 for (int k = 0; k < length; k++)
-                {
                     grid[i, j, k] = new Cell(Modules);
 
-                    // Entire bottom row forced to dirt
-                    if (j == 0 && i == 0 && k == 0)
-                    {
-                        grid[i, j, k].possibleModules = new List<ModulData> { dirt };
-                        grid[i, j, k].collapsed = true;
-                    }
-                }
+       for (int i = 0; i < width; i++)
+            for (int j = 0; j < height; j++)
+                for (int k = 0; k < length; k++)
+                    Propagate(i, j, k);
     }
-
     private void Propagate(int x, int y, int z)
     {
         Queue<Vector3Int> queue = new Queue<Vector3Int>();
@@ -117,10 +107,16 @@ public class WFC : MonoBehaviour
 
     private bool FilterNeighbor(Cell current, Cell neighbor, string currentSide, string neighborSide)
     {
+
         // Collect every name that ANY current module allows on this face
         HashSet<string> allowedNames = new HashSet<string>();
+
+        
+
         foreach (ModulData currentModule in current.possibleModules)
         {
+           // Debug.Log($"current module: " + currentModule);
+           // Debug.Log($"Get valid neighbours: " + currentModule.GetValidNeighbours(currentSide));
             foreach (string name in currentModule.GetValidNeighbours(currentSide))
                 allowedNames.Add(name);
         }
@@ -136,34 +132,35 @@ public class WFC : MonoBehaviour
     }
 
 
-  
+
 
     private void RunWFC()
     {
-        contradictionFound = false;
-
-        // Propagate the seeded cells first before collapsing anything
-        for (int i = 0; i < width; i++)
-            for (int j = 0; j < height; j++)
-                for (int k = 0; k < length; k++)
-                {
-                    if (grid[i, j, k].collapsed)
-                        Propagate(i, j, k);
-                }
-
-        while (!Finished())
+        const int maxAttempts = 1000;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            Vector3Int pos = FindLowestEntrophy();
-            CollapseCell(pos.x, pos.y, pos.z);
+            contradictionFound = false;
+            InitializeGrid();
 
-            // If contradiction was found, restart cleanly
-            if (contradictionFound)
+            // Propagate seeded cells
+            for (int i = 0; i < width; i++)
+                for (int j = 0; j < height; j++)
+                    for (int k = 0; k < length; k++)
+                        if (grid[i, j, k].collapsed)
+                            Propagate(i, j, k);
+
+            while (!Finished())
             {
-                InitializeGrid();
-                RunWFC();
-                return;
+                Vector3Int pos = FindLowestEntrophy();
+                CollapseCell(pos.x, pos.y, pos.z);
+                if (contradictionFound) break;
             }
+
+            if (!contradictionFound) return; // success
+            Debug.LogWarning($"Contradiction on attempt {attempt + 1}, retrying...");
         }
+
+        Debug.LogError($"WFC failed after {maxAttempts} attempts");
     }
 
     private void CollapseCell(int x, int y, int z)
@@ -173,9 +170,9 @@ public class WFC : MonoBehaviour
 
         if (cell.possibleModules.Count == 0)
         {
-            Debug.LogWarning("Contradiction - restarting");
+            Debug.LogWarning($"Contradiction at ({x},{y},{z})");
             contradictionFound = true;
-            return; // just flag and return, RunWFC handles the restart
+            return;
         }
 
         int totalWeight = cell.possibleModules.Sum(m => m.weight);
@@ -260,7 +257,7 @@ public class WFC : MonoBehaviour
                 {
                     ModulData m = grid[x, y, z].possibleModules[0];
 
-                    if (m.name.ToLower() == "p0")
+                   if (m.name.ToLower() == "p-1")
                         continue;
 
                     Renderer r = m.prefab.GetComponent<Renderer>();
@@ -268,15 +265,21 @@ public class WFC : MonoBehaviour
                     {
                         r = m.prefab.GetComponentInChildren<Renderer>();
                     }
-                    /*Vector3 size = r.bounds.size;
+                    Vector3 position = new Vector3(x, y, z);
+                    /*if(m.name.ToLower() != "p-1")
+                    {
+                        Vector3 size = r.bounds.size;
 
-                    Vector3 position = new Vector3(
-                        x * size.x,
-                        y * size.y,
-                        z * size.z
-                    );*/
+                       position = new Vector3(
+                            x * size.x,
+                            y * size.y,
+                            z * size.z
+                        );
+                    }*/
 
-                    Instantiate(m.prefab, new Vector3(x,y,z), Quaternion.identity);
+                    
+
+                    Instantiate(m.prefab, position, Quaternion.identity);
                 }
     }
 

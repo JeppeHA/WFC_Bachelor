@@ -256,6 +256,37 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &331399691
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 331399692}
+  m_Layer: 0
+  m_Name: Air
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &331399692
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 331399691}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -32.22491, y: -15.47166, z: 31.08221}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,48 +459,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ModuleLoader
   prefabMap:
-  - meshName: -1
+  - meshName: p-1
     prefab: {fileID: 3563138654642306030, guid: 187618d4c6fd4404b95f9652d774c308, type: 3}
   - meshName: wfc_module_0
-    prefab: {fileID: 1479790264553438428, guid: b5bc0e36fa6f2b440ab463db26bbcd61, type: 3}
-  - meshName: wfc_module_1
-    prefab: {fileID: 5069679587061278553, guid: dff3d0b1c1baf3a4f823d66ef8fbab2c, type: 3}
-  - meshName: wfc_module_2
-    prefab: {fileID: 3014478011716426101, guid: 5f53c55c4c8700e43924ed6de0986c03, type: 3}
-  - meshName: wfc_module_3
-    prefab: {fileID: 7567016903948808548, guid: 0f7f3cb71439fa24a86c69628bc15b58, type: 3}
-  - meshName: wfc_module_4
-    prefab: {fileID: 2792019959604141046, guid: 475a235f4de4773468cca637d29a72da, type: 3}
-  - meshName: wfc_module_5
-    prefab: {fileID: 6294047955798345542, guid: 6af714c9df3e89943bcdf6855adbbb65, type: 3}
-  - meshName: wfc_module_6
-    prefab: {fileID: 6567438669508727935, guid: 6e359dd6dcd65024d8990371dc2838ff, type: 3}
-  - meshName: wfc_module_7
-    prefab: {fileID: 3474840487186931871, guid: 88aa51da7344d144892e5a64d3c2fb5f, type: 3}
-  - meshName: wfc_module_8
-    prefab: {fileID: 8150086687800546218, guid: 87736943705c1ca4dba9cd5dac26d1ab, type: 3}
-  - meshName: wfc_module_9
-    prefab: {fileID: 7960181128098051834, guid: e58ddf526af62154ea3ef8933971863c, type: 3}
-  - meshName: wfc_module_10
-    prefab: {fileID: 683569167399988497, guid: 40f8f70125bf12e458f32311ac6ced23, type: 3}
-  - meshName: wfc_module_11
-    prefab: {fileID: 7929844782289547455, guid: d142cc4ee98efae4f917f43e2d630a6a, type: 3}
-  - meshName: wfc_module_12
-    prefab: {fileID: 7915339727611428501, guid: 00f088cf8206a2446ac5080148a94e6a, type: 3}
-  - meshName: wfc_module_13
-    prefab: {fileID: 8150730711342104505, guid: 7518b051297de6b42a9c989c4ec87b46, type: 3}
-  - meshName: wfc_module_14
-    prefab: {fileID: 1257206988643037541, guid: 2f97c10909cc510458b9e4c73ce982b5, type: 3}
-  - meshName: wfc_module_15
-    prefab: {fileID: 3690214882496518592, guid: 418db4fe4b7bb954088834597e42d354, type: 3}
-  - meshName: wfc_module_16
-    prefab: {fileID: 3597042499275053096, guid: 2a80a12fa7f2b17478745350f86a9009, type: 3}
-  - meshName: wfc_module_17
-    prefab: {fileID: 4601990022010067938, guid: 2066fb8aa887a804e8359c8160bb9b4d, type: 3}
-  - meshName: wfc_module_18
-    prefab: {fileID: 3922613741538548392, guid: cf494ff750343e74cb542d4c3a2ef2b2, type: 3}
-  - meshName: wfc_module_19
-    prefab: {fileID: 8067596209478534997, guid: 0a461eb2e2d349941942fe3b8144ad2f, type: 3}
+    prefab: {fileID: 7685237686612925366, guid: b5bc0e36fa6f2b440ab463db26bbcd61, type: 3}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,9 +541,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c091313ffd3bf294584399bff49aca58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WFC
-  height: 1
-  width: 1
-  length: 10
+  height: 8
+  width: 8
+  length: 8
   Modules: []
   socketIds: []
   moduleLoader: {fileID: 736393541}
@@ -577,4 +570,5 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 1260960616}
+  - {fileID: 331399692}
   - {fileID: 736393540}
