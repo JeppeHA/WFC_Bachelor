@@ -428,7 +428,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ModuleLoader
   prefabMap:
-  - meshName: -1
+  - meshName: p-1
     prefab: {fileID: 3563138654642306030, guid: 187618d4c6fd4404b95f9652d774c308, type: 3}
   - meshName: wfc_module_0
     prefab: {fileID: 1479790264553438428, guid: b5bc0e36fa6f2b440ab463db26bbcd61, type: 3}
@@ -548,9 +548,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c091313ffd3bf294584399bff49aca58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WFC
-  height: 1
-  width: 1
-  length: 10
+  height: 2
+  width: 5
+  length: 5
   Modules: []
   socketIds: []
   moduleLoader: {fileID: 736393541}

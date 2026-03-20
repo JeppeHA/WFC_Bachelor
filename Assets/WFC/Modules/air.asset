@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
+  m_Name: air
+  m_EditorClassIdentifier: Assembly-CSharp::WFCTile
+  prefab: {fileID: 3563138654642306030, guid: 187618d4c6fd4404b95f9652d774c308, type: 3}
+  posXNeighbors: 00000000
+  negXNeighbors: 00000000
+  posYNeighbors: 
+  negYNeighbors: 000000000100000002000000
+  posZNeighbors: 00000000
+  negZNeighbors: 00000000
+  weight: 1

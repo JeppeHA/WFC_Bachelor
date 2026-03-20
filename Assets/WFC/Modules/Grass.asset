@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
+  m_Name: Grass
+  m_EditorClassIdentifier: Assembly-CSharp::WFCTile
+  prefab: {fileID: 5069679587061278553, guid: dff3d0b1c1baf3a4f823d66ef8fbab2c, type: 3}
+  posXNeighbors: 0100000002000000
+  negXNeighbors: 0100000002000000
+  posYNeighbors: 00000000
+  negYNeighbors: 02000000
+  posZNeighbors: 01000000
+  negZNeighbors: 01000000
+  weight: 1

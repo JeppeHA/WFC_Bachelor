@@ -11,6 +11,7 @@ public class ModulData : ScriptableObject
     public string constrain_to, constrain_from;
     // 6 entries, one per face direction
     public List<string>[] valid_neighbours = new List<string>[6];
+    public int mesh_rotation;
 
     public static readonly string[] SideOrder = { "pX", "nX", "pY", "nY", "pZ", "nZ" };
 
