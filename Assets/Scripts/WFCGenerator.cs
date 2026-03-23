@@ -27,12 +27,15 @@ public class WFCGenerator : MonoBehaviour
 
     [Header("Tiles")]
     public WFCTile[] tiles;
+    public ModuleLoader moduleLoader;
 
     [Header("Generation")]
     public bool generateOnStart = true;
     public bool stepByStep = false;         // Slow-motion debug mode
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
+
+
 
     // ── Internal state ────────────────────────────────────────────────────────
     private WFCCell[,,] grid;
@@ -66,6 +69,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
     {
+        moduleLoader.LoadModules();
         if (generateOnStart) StartCoroutine(GenerateCoroutine());
     }
 
@@ -107,6 +111,7 @@ public class WFCGenerator : MonoBehaviour
 
             if (success)
             {
+                //StartCoroutine(SpawnTilesE());
                 SpawnTiles();
                 Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
                 yield break;
@@ -228,6 +233,25 @@ public class WFCGenerator : MonoBehaviour
             GameObject go = Instantiate(tile.prefab, worldPos, Quaternion.identity, transform);
             spawnedObjects.Add(go);
         }
+    }
+
+    private IEnumerator SpawnTilesE()
+    {
+        for (int x = 0; x < gridX; x++)
+            for (int y = 0; y < gridY; y++)
+                for (int z = 0; z < gridZ; z++)
+                {
+                    WFCCell cell = grid[x, y, z];
+                    if (!cell.collapsed || cell.collapsedTileIndex < 0) continue;
+
+                    WFCTile tile = tiles[cell.collapsedTileIndex];
+                    if (tile.prefab == null) continue;
+
+                    Vector3 worldPos = transform.position + new Vector3(x, y, z) * cellSize;
+                    GameObject go = Instantiate(tile.prefab, worldPos, Quaternion.identity, transform);
+                    spawnedObjects.Add(go);
+                    yield return new WaitForSeconds(0.1f);
+                }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
