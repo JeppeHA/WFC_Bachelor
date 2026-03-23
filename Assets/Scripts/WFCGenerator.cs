@@ -63,7 +63,7 @@ public class WFCGenerator : MonoBehaviour
     // Opposite direction index (needed for constraint propagation)
     private int Opposite(int dir) => dir ^ 1;
 
-    // ── Unity lifecycle ───────────────────────────────────────────────────────
+    // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
     {
         if (generateOnStart) StartCoroutine(GenerateCoroutine());
@@ -168,7 +168,7 @@ public class WFCGenerator : MonoBehaviour
         cell.possibleTiles = new List<int> { chosen };
     }
 
-    // ── Step 3: Propagate (AC-3 style BFS) ───────────────────────────────────
+    // ── Step 3: Propagate  ───────────────────────────────────
     private bool Propagate(Vector3Int start)
     {
         Queue<Vector3Int> queue = new Queue<Vector3Int>();
@@ -181,6 +181,7 @@ public class WFCGenerator : MonoBehaviour
 
             for (int d = 0; d < 6; d++)
             {
+                if (d == 2 || d == 3) continue;
                 Vector3Int neighborPos = current + Directions[d];
 
                 // Bounds check

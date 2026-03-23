@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Dirt
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
   prefab: {fileID: 863330603906094049, guid: d3be3902f0af21d40b381cd77208daa0, type: 3}
-  posXNeighbors: 0100000002000000
-  negXNeighbors: 0100000002000000
-  posYNeighbors: 0200000001000000
-  negYNeighbors: 02000000
-  posZNeighbors: 0100000002000000
-  negZNeighbors: 0100000002000000
-  weight: 1
+  posXNeighbors: 00000000010000000200000003000000
+  negXNeighbors: 00000000010000000200000003000000
+  posYNeighbors: 000000000100000002000000
+  negYNeighbors: 01000000
+  posZNeighbors: 000000000100000002000000
+  negZNeighbors: 00000000010000000200000003000000
+  weight: 3

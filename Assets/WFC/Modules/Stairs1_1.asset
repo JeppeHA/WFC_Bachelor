@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
-  m_Name: Grass
+  m_Name: Stairs1_1
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
-  prefab: {fileID: 6616142317143122160, guid: 1ff18698164100b45b40733f4a2479ab, type: 3}
+  prefab: {fileID: 1116141296413002563, guid: f2f0f47fcc4837c41937be77eeb0b470, type: 3}
   posXNeighbors: 00000000010000000200000003000000
   negXNeighbors: 00000000010000000200000003000000
   posYNeighbors: 00000000
   negYNeighbors: 01000000
-  posZNeighbors: 00000000010000000200000003000000
-  negZNeighbors: 00000000010000000200000003000000
+  posZNeighbors: 0000000001000000
+  negZNeighbors: 00000000
   weight: 1
