@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Stairs1_3
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
   prefab: {fileID: 1116141296413002563, guid: b9aef705e7fe98d4cb8637228e47b92b, type: 3}
-  posXNeighbors: 000000000400000005000000
-  negXNeighbors: 000000000400000005000000
+  posXNeighbors: 0400000005000000
+  negXNeighbors: 0400000005000000
   posYNeighbors: ffffffff
   negYNeighbors: ffffffff
   posZNeighbors: 00000000
   negZNeighbors: 05000000
-  weight: 4
+  weight: 1

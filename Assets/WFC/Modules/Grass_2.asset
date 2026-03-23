@@ -19,4 +19,4 @@ MonoBehaviour:
   negYNeighbors: ffffffff
   posZNeighbors: 05000000040000000100000003000000
   negZNeighbors: 05000000020000000100000003000000
-  weight: 10
+  weight: 5

@@ -499,9 +499,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 642851ce70c844f48a084541f6ddb7ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WFCGenerator
-  gridX: 20
+  gridX: 50
   gridY: 1
-  gridZ: 20
+  gridZ: 50
   cellSize: 1
   tiles:
   - {fileID: 11400000, guid: 4d158cee566d22d4d824780539f90959, type: 2}

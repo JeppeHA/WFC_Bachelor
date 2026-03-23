@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Grass_1
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
   prefab: {fileID: 6616142317143122160, guid: 1ff18698164100b45b40733f4a2479ab, type: 3}
-  posXNeighbors: 020000000400000003000000
-  negXNeighbors: 020000000400000001000000
+  posXNeighbors: 02000000040000000300000000000000
+  negXNeighbors: 02000000040000000100000000000000
   posYNeighbors: ffffffff
   negYNeighbors: ffffffff
-  posZNeighbors: 010000000300000002000000
-  negZNeighbors: 010000000300000004000000
-  weight: 30
+  posZNeighbors: 01000000030000000200000000000000
+  negZNeighbors: 01000000030000000400000000000000
+  weight: 20
