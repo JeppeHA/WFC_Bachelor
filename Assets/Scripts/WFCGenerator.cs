@@ -16,7 +16,6 @@ using UnityEngine;
 /// Each tile has 6 arrays (posX, negX, posY, negY, posZ, negZ).
 /// Fill each array with the tile indices that are ALLOWED to sit next to
 /// this tile in that direction.
-/// Example: tile 0 (grass) posY = {1} means tile 1 (dirt) may sit on top of grass.
 /// </summary>
 public class WFCGenerator : MonoBehaviour
 {
@@ -62,7 +61,7 @@ public class WFCGenerator : MonoBehaviour
     };
 
     // Opposite direction index (needed for constraint propagation)
-    private int Opposite(int dir) => dir ^ 1; // 0↔1, 2↔3, 4↔5
+    private int Opposite(int dir) => dir ^ 1;
 
     // ── Unity lifecycle ───────────────────────────────────────────────────────
     private void Start()
@@ -92,7 +91,7 @@ public class WFCGenerator : MonoBehaviour
             {
                 Vector3Int? cell = PickLowestEntropyCell();
 
-                if (cell == null) { success = true; break; } // All collapsed ✓
+                if (cell == null) { success = true; break; } 
 
                 CollapseCell(cell.Value);
                 bool ok = Propagate(cell.Value);

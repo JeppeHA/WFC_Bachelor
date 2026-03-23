@@ -271,9 +271,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 642851ce70c844f48a084541f6ddb7ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WFCGenerator
-  gridX: 8
-  gridY: 4
-  gridZ: 8
+  gridX: 50
+  gridY: 2
+  gridZ: 50
   cellSize: 1
   tiles:
   - {fileID: 11400000, guid: 2d130a9761f96c446b3dda30a2a6a65d, type: 2}
@@ -282,7 +282,7 @@ MonoBehaviour:
   generateOnStart: 1
   stepByStep: 0
   stepDelay: 0.05
-  maxRetries: 5
+  maxRetries: 20
 --- !u!4 &985481019
 Transform:
   m_ObjectHideFlags: 0
