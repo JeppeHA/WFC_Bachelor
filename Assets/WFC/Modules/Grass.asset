@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
   m_Name: Grass
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
-  prefab: {fileID: 6616142317143122160, guid: 1ff18698164100b45b40733f4a2479ab, type: 3}
+  prefab: {fileID: 9169827341647593118, guid: 1ff18698164100b45b40733f4a2479ab, type: 3}
   posXNeighbors: 02000000040000000300000000000000
   negXNeighbors: 02000000040000000100000000000000
   posYNeighbors: ffffffff

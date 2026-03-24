@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,12 +29,16 @@ public class WFCGenerator : MonoBehaviour
     [Header("Tiles")]
     public WFCTile[] tiles;
     public ModuleLoader moduleLoader;
+    public MeshCombiner meshCombiner;
 
     [Header("Generation")]
     public bool generateOnStart = true;
     public bool stepByStep = false;         // Slow-motion debug mode
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
+
+
+
 
 
 
@@ -114,9 +119,25 @@ public class WFCGenerator : MonoBehaviour
                 //StartCoroutine(SpawnTilesE());
                 SpawnTiles();
                 Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
+
+
+                /*foreach (var obj in spawnedObjects)
+                {
+                   MeshFilter mesh = obj.GetComponent<MeshFilter>();
+                    if (mesh == null)
+                        mesh = obj.transform.GetChild(0).GetComponent<MeshFilter>();
+                    meshCombiner.AddMeshes(mesh);
+
+                }
+
+                meshCombiner.Combine();*/
+
                 yield break;
             }
         }
+
+
+        
 
         Debug.LogError("WFC failed after all retries. Check your neighbor rules.");
     }
