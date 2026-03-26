@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
-  m_Name: Stairs_2
+  m_Name: Stairs_z
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
-  prefab: {fileID: 1116141296413002563, guid: 73cc7db93d9bcc246b17b6cf0fad85a7, type: 3}
-  posXNeighbors: 05000000
-  negXNeighbors: 00000000
+  obj: {fileID: 1116141296413002563, guid: f2f0f47fcc4837c41937be77eeb0b470, type: 3}
+  layer: 0
+  posXNeighbors: 0100000003000000
+  negXNeighbors: 0100000003000000
   posYNeighbors: ffffffff
   negYNeighbors: ffffffff
-  posZNeighbors: 0300000005000000
-  negZNeighbors: 0300000005000000
+  posZNeighbors: 03000000
+  negZNeighbors: 00000000
   weight: 1

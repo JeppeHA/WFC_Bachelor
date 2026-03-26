@@ -18,10 +18,9 @@ public class ModuleGenerator : MonoBehaviour
     // layerObjects needs to to follow an ground then stairs order in layerobjects
     //First layer is defined as scriptable objects in the inspector
 
-    void Start()
+    private void Awake()
     {
         CreateModules();
-        
     }
 
 
@@ -29,10 +28,7 @@ public class ModuleGenerator : MonoBehaviour
     {
         for (int i = 0; i < numberOfLayers; i++)
         {
-            for(int k = 0; i  <= layerObjects.Count; k++)
-            {
-                AddModule(null);
-            }
+
             
             for (int j = 0; j < layerObjects.Count; j++)
             {
@@ -46,21 +42,22 @@ public class ModuleGenerator : MonoBehaviour
                 {
                     continue;
                 }
-                WFCTile module = CreateModule(i, layerObjects[j].prefab, indexs[0], indexs[1], indexs[4], indexs[5], 1);
-                Debug.Log(module.prefab.name);
+                
+                
+                WFCTile module = CreateModule(i, layerObjects[j].obj, indexs[0], indexs[1], indexs[4], indexs[5], 1);
+                Debug.Log(module.obj.name);
                 AddModule(module);
             }
+
+            if (i == numberOfLayers - 1)
+            {
+                int[][] lastFloorIndexs = AssingNeighbors(i + 1, layerObjects[0]);
+                WFCTile lastModule = CreateModule(i+ 1, layerObjects[0].obj, lastFloorIndexs[0], lastFloorIndexs[1], lastFloorIndexs[4], lastFloorIndexs[5], 5); 
+                AddModule(lastModule);
+            }
+            
         }
 
-    }
-
-
-    private void PrintNeighbors(int[] neighborList)
-    {
-        foreach (int neighbor in neighborList)
-        {
-            Debug.Log(neighbor);
-        }
     }
 
 
@@ -78,76 +75,69 @@ public class ModuleGenerator : MonoBehaviour
     {
         int[][] neighborIndexs = new int[6][];
 
-        currentFloorIndex = modules.Count - layerObjects.Count;
-
-        int px;
-        int nx;
-        int pz;
-        int nz;
-
-        if (layerObject.name.ToLower().Contains("stairs"))
-        {
-            switch (layerObject.name[layerObject.name.Length - 1])
-            {
-                case '0':
-                    neighborIndexs[0] = new int[] { currentFloorIndex };
-                    neighborIndexs[1] = new int[] { modules.Count };
-                    neighborIndexs[3] = new int[] {1 + currentFloorIndex, modules.Count };
-                    neighborIndexs[4] = new int[] { 1 + currentFloorIndex, modules.Count };
-                    break;
-                case '1':
-                    
-                break;
-                case '4':
-
-                break;
-                case '5':
-                break;
-            }
-            if(neighborIndexs == null)
-            {
-                return null;
-            }
-            return neighborIndexs;
-        }
+        if (layerObject.name.ToLower().Contains("z"))
+        
+            neighborIndexs = AssignZStairs(layer);
+        
+        else if (layerObject.name.ToLower().Contains("x"))
+            neighborIndexs = AssingXZStairs(layer);    
         else
-        {
-            px = 2 + currentFloorIndex;
-            nx = 4 + currentFloorIndex;
-            pz = 1 + currentFloorIndex;
-            nz = 3 + currentFloorIndex;
-            for (int i = 0; i < neighborIndexs.Length; i++) {
-                    if (i == 2 || i == 3)
-                    {
-                        neighborIndexs[i] = new int[] { -1 };
-                        continue;
-                    }
-                    switch (i)
-                    {
-                    case 0:
-                        neighborIndexs[i] = new int[] { currentFloorIndex, px, nx, nz };
-                        break;
-                    case 1:
-                        neighborIndexs[i] = new int[] { currentFloorIndex, px, nz, pz };
-                        break;
-                    case 4:
-                        neighborIndexs[i] = new int[] { currentFloorIndex, px, pz, nz };
-                        break;
-                    case 5:
-                        neighborIndexs[i] = new int[] { currentFloorIndex, nx, pz, nz };
-                        break;
-                    }
-                }
-        }
-
+            neighborIndexs = AssignFloor(layer);
+            
             return neighborIndexs;
     }
 
+    private int[][] AssignZStairs(int layer)
+    {
+        int[][] neighborIndexs = new int[6][];
+        currentFloorIndex = layerObjects.Count * layer;
+        Debug.Log("CurrentFloorIndex: " + currentFloorIndex);
+        neighborIndexs[0] = new int[] { currentFloorIndex + 1, currentFloorIndex + layerObjects.Count };
+        neighborIndexs[1] = new int[] { currentFloorIndex + 1, currentFloorIndex + layerObjects.Count };
+        neighborIndexs[2] = new int[] { -1 };
+        neighborIndexs[3] = new int[] { -1 };
+        neighborIndexs[4] = new int[] { currentFloorIndex + (layerObjects.Count) };
+        neighborIndexs[5] = new int[] { currentFloorIndex  };
+
+        return neighborIndexs;
+    }
+
+    private int[][] AssingXZStairs(int layer)
+    {
+        int[][] neighborIndexs = new int[6][];
+        currentFloorIndex = layerObjects.Count * layer;
+    
+        neighborIndexs[0] = new int[] { currentFloorIndex + layerObjects.Count };
+        neighborIndexs[1] = new int[] { currentFloorIndex };
+        neighborIndexs[2] = new int[] { -1 };
+        neighborIndexs[3] = new int[] { -1 };
+        neighborIndexs[4] = new int[] { currentFloorIndex + 2,  currentFloorIndex + layerObjects.Count };
+        neighborIndexs[5] = new int[] { currentFloorIndex + 2,  currentFloorIndex + layerObjects.Count};
+
+        return neighborIndexs;
+    }
+
+    private int[][] AssignFloor(int layer)
+    {
+        int[][] neighborIndexs = new int[6][];
+        currentFloorIndex = layerObjects.Count * layer;
+    
+        neighborIndexs[0] = new int[] { currentFloorIndex, currentFloorIndex - 2, currentFloorIndex + 2  };
+        neighborIndexs[1] = new int[] { currentFloorIndex, currentFloorIndex - 1, currentFloorIndex - layerObjects.Count};
+        neighborIndexs[2] = new int[] { -1 };
+        neighborIndexs[3] = new int[] { -1 };
+        neighborIndexs[4] = new int[] { currentFloorIndex, currentFloorIndex - 1, currentFloorIndex + 1 };
+        neighborIndexs[5] = new int[] { currentFloorIndex, currentFloorIndex -2, currentFloorIndex - layerObjects.Count  };
+
+        return neighborIndexs;
+    }
 
     private WFCTile CreateModule(int layer, GameObject layerObject, int[] px, int[]nx, int[]pz, int[] xz, int weight)
     {
-        WFCTile module = new WFCTile();
-        module.prefab = layerObject;
+        Debug.Log("Layer: "  + layer);
+        WFCTile module = ScriptableObject.CreateInstance<WFCTile>();
+        module.layer = layer;   
+        module.obj = layerObject;
         module.posXNeighbors = px;
         module.negXNeighbors = nx;
         module.posYNeighbors = new int[1] { -1 };

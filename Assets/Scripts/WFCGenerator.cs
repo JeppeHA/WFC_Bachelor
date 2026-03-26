@@ -28,11 +28,11 @@ public class WFCGenerator : MonoBehaviour
 
     [Header("Tiles")]
     public WFCTile[] tiles;
-    public ModuleLoader moduleLoader;
     public MeshCombiner meshCombiner;
 
     [Header("Generation")]
     public bool generateOnStart = true;
+    public ModuleGenerator moduleGenerator;
     public bool stepByStep = false;         // Slow-motion debug mode
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
@@ -74,7 +74,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
     {
-        moduleLoader.LoadModules();
+        tiles = moduleGenerator.GetModules().ToArray();
         if (generateOnStart) StartCoroutine(GenerateCoroutine());
     }
 
@@ -248,10 +248,16 @@ public class WFCGenerator : MonoBehaviour
             if (!cell.collapsed || cell.collapsedTileIndex < 0) continue;
 
             WFCTile tile = tiles[cell.collapsedTileIndex];
-            if (tile.prefab == null) continue;
+            if (tile.obj == null) continue;
 
-            Vector3 worldPos = transform.position + new Vector3(x, y, z) * cellSize;
-            GameObject go = Instantiate(tile.prefab, worldPos, Quaternion.identity, transform);
+            Vector3 worldPos;
+            if (tile.name.ToLower().Contains("stair"))
+            {
+              worldPos = transform.position + new Vector3(x, tile.layer + 1, z) * cellSize;
+            }
+            worldPos = transform.position + new Vector3(x, tile.layer, z) * cellSize;
+            
+            GameObject go = Instantiate(tile.obj, worldPos, Quaternion.identity, transform);
             spawnedObjects.Add(go);
         }
     }
@@ -266,10 +272,10 @@ public class WFCGenerator : MonoBehaviour
                     if (!cell.collapsed || cell.collapsedTileIndex < 0) continue;
 
                     WFCTile tile = tiles[cell.collapsedTileIndex];
-                    if (tile.prefab == null) continue;
+                    if (tile.obj == null) continue;
 
                     Vector3 worldPos = transform.position + new Vector3(x, y, z) * cellSize;
-                    GameObject go = Instantiate(tile.prefab, worldPos, Quaternion.identity, transform);
+                    GameObject go = Instantiate(tile.obj, worldPos, Quaternion.identity, transform);
                     spawnedObjects.Add(go);
                     yield return new WaitForSeconds(0.1f);
                 }

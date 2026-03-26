@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3215333557223307228}
   m_Layer: 0
-  m_Name: stairs1_1
+  m_Name: stair_z
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
