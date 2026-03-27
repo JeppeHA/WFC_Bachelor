@@ -20,4 +20,4 @@ MonoBehaviour:
   negYNeighbors: ffffffff
   posZNeighbors: 0200000003000000
   negZNeighbors: 0200000003000000
-  weight: 1
+  weight: 10

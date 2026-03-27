@@ -42,21 +42,18 @@ public class ModuleGenerator : MonoBehaviour
                 {
                     continue;
                 }
-                
-                
-                WFCTile module = CreateModule(i, layerObjects[j].obj, indexs[0], indexs[1], indexs[4], indexs[5], 1);
-                Debug.Log(module.obj.name);
+                //Index out of bounds
+                Debug.Log("indexs length: " + indexs.Length);
+                WFCTile module = CreateModule(i, layerObjects[j].obj, indexs[0], indexs[1], indexs[4], indexs[5], layerObjects[j].weight);
                 AddModule(module);
-            }
-
-            if (i == numberOfLayers - 1)
-            {
-                int[][] lastFloorIndexs = AssingNeighbors(i + 1, layerObjects[0]);
-                WFCTile lastModule = CreateModule(i+ 1, layerObjects[0].obj, lastFloorIndexs[0], lastFloorIndexs[1], lastFloorIndexs[4], lastFloorIndexs[5], 5); 
-                AddModule(lastModule);
             }
             
         }
+            Debug.Log("Last layer of floor");
+            int[][] lastFloorIndexs = AssingNeighbors(numberOfLayers, layerObjects[0]);
+            WFCTile lastModule = CreateModule(numberOfLayers, layerObjects[0].obj, lastFloorIndexs[0], lastFloorIndexs[1], lastFloorIndexs[4], lastFloorIndexs[5], layerObjects[0].weight); 
+            AddModule(lastModule);
+        
 
     }
 
@@ -122,17 +119,19 @@ public class ModuleGenerator : MonoBehaviour
         int[][] neighborIndexs = new int[6][];
         currentFloorIndex = layerObjects.Count * layer;
     
-        neighborIndexs[0] = new int[] { currentFloorIndex, currentFloorIndex - 2, currentFloorIndex + 2  };
-        neighborIndexs[1] = new int[] { currentFloorIndex, currentFloorIndex - 1, currentFloorIndex - layerObjects.Count};
+        neighborIndexs[0] = new int[] { currentFloorIndex, currentFloorIndex + layerObjects.Count, currentFloorIndex + 2, currentFloorIndex + 1};
+        neighborIndexs[1] = new int[] { currentFloorIndex, currentFloorIndex - layerObjects.Count, currentFloorIndex - 1, currentFloorIndex - 2 };
         neighborIndexs[2] = new int[] { -1 };
         neighborIndexs[3] = new int[] { -1 };
-        neighborIndexs[4] = new int[] { currentFloorIndex, currentFloorIndex - 1, currentFloorIndex + 1 };
-        neighborIndexs[5] = new int[] { currentFloorIndex, currentFloorIndex -2, currentFloorIndex - layerObjects.Count  };
+        neighborIndexs[4] = new int[]
+            { currentFloorIndex, currentFloorIndex + layerObjects.Count, currentFloorIndex + 2, currentFloorIndex + 1 };
+        neighborIndexs[5] = new int[]
+            { currentFloorIndex, currentFloorIndex - layerObjects.Count, currentFloorIndex - 1, currentFloorIndex - 2 };
 
         return neighborIndexs;
     }
 
-    private WFCTile CreateModule(int layer, GameObject layerObject, int[] px, int[]nx, int[]pz, int[] xz, int weight)
+    private WFCTile CreateModule(int layer, GameObject layerObject, int[] px, int[]nx, int[]pz, int[] xz, float weight)
     {
         Debug.Log("Layer: "  + layer);
         WFCTile module = ScriptableObject.CreateInstance<WFCTile>();

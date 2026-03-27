@@ -26,7 +26,7 @@ public static class WFCExampleSetup
         // ── Tile 0: Air ───────────────────────────────────────────────────────
         // Air can be next to air on all sides, and above grass on the Y- side.
         WFCTile air = ScriptableObject.CreateInstance<WFCTile>();
-        air.weight = 8f;
+        air.weight = 8;
         air.posXNeighbors = new[] { 0 };        // air | air
         air.negXNeighbors = new[] { 0 };
         air.posYNeighbors = new[] { 0 };        // air above air
@@ -38,7 +38,7 @@ public static class WFCExampleSetup
         // ── Tile 1: Grass ─────────────────────────────────────────────────────
         // Grass connects horizontally to grass, has air above, dirt below.
         WFCTile grass = ScriptableObject.CreateInstance<WFCTile>();
-        grass.weight = 3f;
+        grass.weight = 3;
         grass.posXNeighbors = new[] { 1 };      // grass | grass
         grass.negXNeighbors = new[] { 1 };
         grass.posYNeighbors = new[] { 0 };      // air above grass
@@ -50,7 +50,7 @@ public static class WFCExampleSetup
         // ── Tile 2: Dirt ──────────────────────────────────────────────────────
         // Dirt connects horizontally to dirt, has grass or dirt above, dirt below.
         WFCTile dirt = ScriptableObject.CreateInstance<WFCTile>();
-        dirt.weight = 4f;
+        dirt.weight = 4;
         dirt.posXNeighbors = new[] { 2 };
         dirt.negXNeighbors = new[] { 2 };
         dirt.posYNeighbors = new[] { 1, 2 };    // grass or dirt above

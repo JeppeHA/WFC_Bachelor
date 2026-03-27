@@ -4,7 +4,6 @@ using UnityEngine;
 public class WFCTile : ScriptableObject
 {
     public GameObject obj;
-
     public int layer;
     [Header("Neighbor Rules (which tile IDs can be placed in each direction)")]
     public int[] posXNeighbors; // +X (right)
