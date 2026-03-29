@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
-  m_Name: Grass
+  m_Name: Door
   m_EditorClassIdentifier: Assembly-CSharp::WFCTile
-  obj: {fileID: 9169827341647593118, guid: 1ff18698164100b45b40733f4a2479ab, type: 3}
+  obj: {fileID: 9169827341647593118, guid: 4adb6305cfef2ec4095a08ca055c5f14, type: 3}
   layer: 0
-  posXNeighbors: 000000000200000003000000
-  negXNeighbors: 00000000
-  posYNeighbors: ffffffff
-  negYNeighbors: ffffffff
-  posZNeighbors: 000000000100000003000000
-  negZNeighbors: 00000000
+  posXNeighbors: 
+  negXNeighbors: 
+  posYNeighbors: 
+  negYNeighbors: 
+  posZNeighbors: 
+  negZNeighbors: 
   weight: 1

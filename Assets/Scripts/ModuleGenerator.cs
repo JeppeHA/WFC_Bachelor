@@ -1,162 +1,233 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+/// <summary>
+/// Generates WFC (Wave Function Collapse) modules across multiple layers,
+/// including floor tiles, stairs, and transition pieces.
+/// </summary>
 public class ModuleGenerator : MonoBehaviour
 {
+    [Header("Layer Configuration")]
     public int numberOfLayers;
+    public List<WFCTile> layerObjects; // Must follow ground-then-stairs order
 
-    [SerializeField]
-    private List<WFCTile> modules;
+    [Header("Module Data")]
+    [SerializeField] private List<WFCTile> modules;
+    [SerializeField] private List<WFCTile> transitions;
 
-    public List<WFCTile> layerObjects;
-
+    private int Stride => layerObjects.Count + transitions.Count;
     private int currentFloorIndex = 0;
 
-    // layerObjects needs to to follow an ground then stairs order in layerobjects
-    //First layer is defined as scriptable objects in the inspector
+    // ─── Unity Lifecycle ───────────────────────────────────────────────────────
 
-    private void Awake()
-    {
-        CreateModules();
-    }
+    private void Awake() => CreateModules();
 
+    // ─── Module Creation ───────────────────────────────────────────────────────
 
     public void CreateModules()
     {
-        for (int i = 0; i < numberOfLayers; i++)
-        {
+        CreateLayerModules();
+        CreateTopFloorCap();
+        GenerateTransitions();
+        UpdateIndices();
+    }
 
-            
-            for (int j = 0; j < layerObjects.Count; j++)
+    private void CreateLayerModules()
+    {
+        for (int layer = 0; layer < numberOfLayers; layer++)
+        {
+            foreach (WFCTile tile in layerObjects)
             {
-                if (i == 0)
+                if (layer == 0)
                 {
-                    AddModule(layerObjects[j]);
+                    AddModule(tile);
                     continue;
                 }
-                int[][] indexs = AssingNeighbors(i, layerObjects[j]);
-                if (indexs == null)
-                {
-                    continue;
-                }
-                //Index out of bounds
-                Debug.Log("indexs length: " + indexs.Length);
-                WFCTile module = CreateModule(i, layerObjects[j].obj, indexs[0], indexs[1], indexs[4], indexs[5], layerObjects[j].weight);
+
+                int[][] neighbors = AssignNeighbors(layer, tile);
+                if (neighbors == null) continue;
+
+                Debug.Log($"Neighbor count: {neighbors.Length}");
+                WFCTile module = CreateModule(layer, tile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], tile.weight);
                 AddModule(module);
             }
-            
         }
-            Debug.Log("Last layer of floor");
-            int[][] lastFloorIndexs = AssingNeighbors(numberOfLayers, layerObjects[0]);
-            WFCTile lastModule = CreateModule(numberOfLayers, layerObjects[0].obj, lastFloorIndexs[0], lastFloorIndexs[1], lastFloorIndexs[4], lastFloorIndexs[5], layerObjects[0].weight); 
-            AddModule(lastModule);
-        
-
     }
 
-
-    /*
-     * Objects that rotate needs thier name to end with thier rotation 0=0 degrees 1=90 degrees...
-     **/
-
-
-    // [0][] px
-    // [1][] nx
-    // [4][] pz
-    // [5][] nz
-
-    private int[][] AssingNeighbors(int layer, WFCTile layerObject)
+    /// <summary>Adds a final floor cap above the topmost layer.</summary>
+    private void CreateTopFloorCap()
     {
-        int[][] neighborIndexs = new int[6][];
+        Debug.Log("Creating top floor cap");
+        WFCTile baseTile = layerObjects[0];
+        int[][] neighbors = AssignNeighbors(numberOfLayers, baseTile);
+        WFCTile capModule = CreateModule(numberOfLayers, baseTile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], baseTile.weight);
+        AddModule(capModule);
+    }
 
-        if (layerObject.name.ToLower().Contains("z"))
-        
-            neighborIndexs = AssignZStairs(layer);
-        
-        else if (layerObject.name.ToLower().Contains("x"))
-            neighborIndexs = AssingXZStairs(layer);    
-        else
-            neighborIndexs = AssignFloor(layer);
+    private void GenerateTransitions()
+    {
+        for (int layer = 0; layer < numberOfLayers; layer++)
+        {
+            foreach (WFCTile transition in transitions)
+            {
+                int[][] neighbors = AssignDoorNeighbors(layer);
+                WFCTile module = CreateModule(layer, transition.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], transition.weight);
+                AddModule(module);
+            }
+        }
+    }
+
+    private void UpdateIndices()
+    {
+        int amountOfTransitions = modules.Count - numberOfLayers;
+        int index = amountOfTransitions + 1;
+        for (int i = 0; i < modules.Count; i+=3)
+        {
+            if(i == 0)
+                continue;
+            if(i >= layerObjects.Count * numberOfLayers)
+                continue;
             
-            return neighborIndexs;
+            int[][] temp = new int[4][];
+            temp[0] = modules[i].posXNeighbors;
+            temp[1] = modules[i].negXNeighbors;
+            temp[2] = modules[i].posZNeighbors;
+            temp[3] = modules[i].negZNeighbors;
+            
+            int[] indexs = {index};
+          
+            modules[i].posXNeighbors = modules[i].posXNeighbors.Union(indexs).ToArray();
+            modules[i].negXNeighbors = modules[i].negXNeighbors.Union(indexs).ToArray();
+            modules[i].posZNeighbors = modules[i].posZNeighbors.Union(indexs).ToArray();
+            modules[i].negZNeighbors = modules[i].negZNeighbors.Union(indexs).ToArray();
+            index++;
+
+        }
     }
 
-    private int[][] AssignZStairs(int layer)
-    {
-        int[][] neighborIndexs = new int[6][];
-        currentFloorIndex = layerObjects.Count * layer;
-        Debug.Log("CurrentFloorIndex: " + currentFloorIndex);
-        neighborIndexs[0] = new int[] { currentFloorIndex + 1, currentFloorIndex + layerObjects.Count };
-        neighborIndexs[1] = new int[] { currentFloorIndex + 1, currentFloorIndex + layerObjects.Count };
-        neighborIndexs[2] = new int[] { -1 };
-        neighborIndexs[3] = new int[] { -1 };
-        neighborIndexs[4] = new int[] { currentFloorIndex + (layerObjects.Count) };
-        neighborIndexs[5] = new int[] { currentFloorIndex  };
-
-        return neighborIndexs;
-    }
-
-    private int[][] AssingXZStairs(int layer)
-    {
-        int[][] neighborIndexs = new int[6][];
-        currentFloorIndex = layerObjects.Count * layer;
+    // ─── Neighbor Assignment ───────────────────────────────────────────────────
     
-        neighborIndexs[0] = new int[] { currentFloorIndex + layerObjects.Count };
-        neighborIndexs[1] = new int[] { currentFloorIndex };
-        neighborIndexs[2] = new int[] { -1 };
-        neighborIndexs[3] = new int[] { -1 };
-        neighborIndexs[4] = new int[] { currentFloorIndex + 2,  currentFloorIndex + layerObjects.Count };
-        neighborIndexs[5] = new int[] { currentFloorIndex + 2,  currentFloorIndex + layerObjects.Count};
+    private int[][] AssignNeighbors(int layer, WFCTile tile)
+    {
+        string tileName = tile.name.ToLower();
 
-        return neighborIndexs;
+        if (tileName.Contains("z")) return AssignZStairNeighbors(layer);
+        if (tileName.Contains("x")) return AssignXStairNeighbors(layer);
+        return AssignFloorNeighbors(layer);
     }
 
-    private int[][] AssignFloor(int layer)
+    private int[][] AssignZStairNeighbors(int layer)
     {
-        int[][] neighborIndexs = new int[6][];
         currentFloorIndex = layerObjects.Count * layer;
-    
-        neighborIndexs[0] = new int[] { currentFloorIndex, currentFloorIndex + layerObjects.Count, currentFloorIndex + 2, currentFloorIndex + 1};
-        neighborIndexs[1] = new int[] { currentFloorIndex, currentFloorIndex - layerObjects.Count, currentFloorIndex - 1, currentFloorIndex - 2 };
-        neighborIndexs[2] = new int[] { -1 };
-        neighborIndexs[3] = new int[] { -1 };
-        neighborIndexs[4] = new int[]
-            { currentFloorIndex, currentFloorIndex + layerObjects.Count, currentFloorIndex + 2, currentFloorIndex + 1 };
-        neighborIndexs[5] = new int[]
-            { currentFloorIndex, currentFloorIndex - layerObjects.Count, currentFloorIndex - 1, currentFloorIndex - 2 };
+        Debug.Log($"Z-Stair floor index: {currentFloorIndex}");
 
-        return neighborIndexs;
+        int nextFloor = currentFloorIndex + layerObjects.Count;
+
+        return new int[][]
+        {
+            new[] { currentFloorIndex + 1, nextFloor },  // +X
+            new[] { currentFloorIndex + 1, nextFloor },  // -X
+            new[] { -1 },                                // +Y
+            new[] { -1 },                                // -Y
+            new[] { nextFloor },                         // +Z
+            new[] { currentFloorIndex },                 // -Z
+        };
     }
 
-    private WFCTile CreateModule(int layer, GameObject layerObject, int[] px, int[]nx, int[]pz, int[] xz, float weight)
+    private int[][] AssignXStairNeighbors(int layer)
     {
-        Debug.Log("Layer: "  + layer);
+        currentFloorIndex = layerObjects.Count * layer;
+
+        int nextFloor = currentFloorIndex + layerObjects.Count;
+
+        return new int[][]
+        {
+            new[] { nextFloor },                                  // +X
+            new[] { currentFloorIndex },                          // -X
+            new[] { -1 },                                         // +Y
+            new[] { -1 },                                         // -Y
+            new[] { currentFloorIndex + 2, nextFloor },           // +Z
+            new[] { currentFloorIndex + 2, nextFloor },           // -Z
+        };
+    }
+
+    private int[][] AssignFloorNeighbors(int layer)
+    {
+        currentFloorIndex = layerObjects.Count * layer;
+
+        int nextFloor  = currentFloorIndex + layerObjects.Count;
+        int prevFloor  = currentFloorIndex - layerObjects.Count;
+
+        int[] forwardNeighbors = null;
+        int[] backwardNeighbors = new []{ currentFloorIndex, prevFloor, currentFloorIndex - 1, currentFloorIndex - 2 };
+
+        if (layer >= numberOfLayers)
+        {
+            forwardNeighbors = new []{ currentFloorIndex };
+        }
+        else
+        {
+            forwardNeighbors = new []{ currentFloorIndex, nextFloor,  currentFloorIndex + 2, currentFloorIndex + 1 };
+           
+        }
+        
+        
+
+        return new int[][]
+        {
+            forwardNeighbors,   // +X
+            backwardNeighbors,  // -X
+            new[] { -1 },       // +Y
+            new[] { -1 },       // -Y
+            forwardNeighbors,   // +Z
+            backwardNeighbors,  // -Z
+        };
+    }
+
+    private int[][] AssignDoorNeighbors(int layer)
+    {
+        currentFloorIndex = layerObjects.Count * layer;
+
+        int[] sameFloor = { currentFloorIndex };
+
+        return new int[][]
+        {
+            sameFloor,    // +X
+            sameFloor,    // -X
+            new[] { -1 }, // +Y
+            new[] { -1 }, // -Y
+            sameFloor,    // +Z
+            sameFloor,    // -Z
+        };
+    }
+    
+    // Module factory
+
+    private WFCTile CreateModule(int layer, GameObject obj, int[] posX, int[] negX, int[] posZ, int[] negZ, float weight)
+    {
+        Debug.Log($"Creating module for layer {layer}");
+
         WFCTile module = ScriptableObject.CreateInstance<WFCTile>();
-        module.layer = layer;   
-        module.obj = layerObject;
-        module.posXNeighbors = px;
-        module.negXNeighbors = nx;
-        module.posYNeighbors = new int[1] { -1 };
-        module.negYNeighbors = new int[1] { -1 };
-        module.posZNeighbors = pz;
-        module.negZNeighbors = xz;
-        module.weight = weight;
-        module.name = layerObject.name +"_" +layer; 
+        module.layer         = layer;
+        module.obj           = obj;
+        module.posXNeighbors = posX;
+        module.negXNeighbors = negX;
+        module.posYNeighbors = new[] { -1 };
+        module.negYNeighbors = new[] { -1 };
+        module.posZNeighbors = posZ;
+        module.negZNeighbors = negZ;
+        module.weight        = weight;
+        module.name          = $"{obj.name}_{layer}";
+
         return module;
     }
 
-    private void AddModule(WFCTile module)
-    {
-        modules.Add(module);
-    }
+    private void AddModule(WFCTile module)     => modules.Add(module);
+    private void AddTransition(WFCTile module) => transitions.Add(module);
 
-    public List<WFCTile> GetModules()
-    {
-        return modules;
-    }
- 
-
+    public List<WFCTile> GetModules() => modules;
 }

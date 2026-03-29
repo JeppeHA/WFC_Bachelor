@@ -296,7 +296,7 @@ MonoBehaviour:
   stepByStep: 0
   stepDelay: 0.05
   maxRetries: 20
-  transitions: 3
+  transitions: 0
   transitionModules: []
 --- !u!4 &985481019
 Transform:
@@ -803,11 +803,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ModuleGenerator
   numberOfLayers: 4
+  modules: []
   layerObjects:
   - {fileID: 11400000, guid: 4d158cee566d22d4d824780539f90959, type: 2}
   - {fileID: 11400000, guid: f17796f02e119a543b062bdf32e43e12, type: 2}
   - {fileID: 11400000, guid: d2e6c452a99f1f24ca9477fae26e4a34, type: 2}
-  modules: []
   transitions:
   - {fileID: 11400000, guid: 880b0a57e0b23b84abb33c130d72ab4a, type: 2}
 --- !u!4 &1607884181

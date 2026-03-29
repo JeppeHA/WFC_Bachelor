@@ -1,23 +1,11 @@
+using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-/// <summary>
-/// Wave Function Collapse generator for a 3D grid.
-/// 
-/// SETUP:
-/// 1. Create WFCTile assets (Assets > WFC > Tile) and assign prefabs + neighbor rules.
-/// 2. Add this component to a GameObject in your scene.
-/// 3. Assign tiles array in the Inspector.
-/// 4. Press Play (or call Generate() at runtime).
-/// 
-/// NEIGHBOR RULE FORMAT:
-/// Each tile has 6 arrays (posX, negX, posY, negY, posZ, negZ).
-/// Fill each array with the tile indices that are ALLOWED to sit next to
-/// this tile in that direction.
-/// </summary>
 public class WFCGenerator : MonoBehaviour
 {
     [Header("Grid Settings")]
@@ -37,10 +25,10 @@ public class WFCGenerator : MonoBehaviour
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
 
-
-
-
-
+    [Header("PreSpawns")] 
+    public int transitions;
+    public WFCTile[] transitionModules;
+    
 
     // ── Internal state ────────────────────────────────────────────────────────
     private WFCCell[,,] grid;
@@ -75,6 +63,7 @@ public class WFCGenerator : MonoBehaviour
     private void Start()
     {
         tiles = moduleGenerator.GetModules().ToArray();
+   
         if (generateOnStart) StartCoroutine(GenerateCoroutine());
     }
 
@@ -87,60 +76,100 @@ public class WFCGenerator : MonoBehaviour
 
     // ── Core algorithm ────────────────────────────────────────────────────────
     private IEnumerator GenerateCoroutine()
+{
+    ClearSpawned();
+
+    for (int attempt = 0; attempt < maxRetries; attempt++)
     {
-        ClearSpawned();
+        InitialiseGrid();
 
-        for (int attempt = 0; attempt < maxRetries; attempt++)
+        // Pre-collapse transitions and collect their positions
+        List<Vector3Int> preCollapsedPositions = new List<Vector3Int>();
+        
+        if (!CollapseTransitions(preCollapsedPositions))
         {
-            InitialiseGrid();
-
-            bool success = false;
-
-            while (true)
-            {
-                Vector3Int? cell = PickLowestEntropyCell();
-
-                if (cell == null) { success = true; break; } 
-
-                CollapseCell(cell.Value);
-                bool ok = Propagate(cell.Value);
-
-                if (!ok)
-                {
-                    Debug.LogWarning($"WFC contradiction on attempt {attempt + 1}. Retrying…");
-                    break;
-                }
-
-                if (stepByStep) yield return new WaitForSeconds(stepDelay);
-            }
-
-            if (success)
-            {
-                //StartCoroutine(SpawnTilesE());
-                SpawnTiles();
-                Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
-
-
-                /*foreach (var obj in spawnedObjects)
-                {
-                   MeshFilter mesh = obj.GetComponent<MeshFilter>();
-                    if (mesh == null)
-                        mesh = obj.transform.GetChild(0).GetComponent<MeshFilter>();
-                    meshCombiner.AddMeshes(mesh);
-
-                }
-
-                meshCombiner.Combine();*/
-
-                yield break;
-            }
+            Debug.LogWarning($"Pre-collapse failed on attempt {attempt + 1}. Retrying…");
+            continue;
         }
 
+        // Propagate all pinned cells together so their constraints race outward jointly
+        if (!PropagateAll(preCollapsedPositions))
+        {
+            Debug.LogWarning($"Pre-collapse propagation failed on attempt {attempt + 1}. Retrying…");
+            continue;
+        }
 
-        
+        bool success = false;
 
-        Debug.LogError("WFC failed after all retries. Check your neighbor rules.");
+        while (true)
+        {
+            Vector3Int? cell = PickLowestEntropyCell();
+            if (cell == null) { success = true; break; }
+
+            CollapseCell(cell.Value);
+
+            if (!Propagate(cell.Value))
+            {
+                Debug.LogWarning($"WFC contradiction on attempt {attempt + 1}. Retrying…");
+                break;
+            }
+
+            if (stepByStep) yield return new WaitForSeconds(stepDelay);
+        }
+
+        if (success)
+        {
+            SpawnTiles();
+            Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
+            yield break;
+        }
     }
+
+    Debug.LogError("WFC failed after all retries. Check your neighbor rules.");
+}
+
+
+
+// Seeds queue with every pinned cell so all constraints spread simultaneously
+private bool PropagateAll(List<Vector3Int> starts)
+{
+    Queue<Vector3Int> queue = new Queue<Vector3Int>();
+
+    foreach (var pos in starts)
+        queue.Enqueue(pos);
+
+    while (queue.Count > 0)
+    {
+        Vector3Int current = queue.Dequeue();
+        WFCCell currentCell = grid[current.x, current.y, current.z];
+
+        for (int d = 0; d < 6; d++)
+        {
+            if (d == 2 || d == 3) continue; // skip Y
+
+            Vector3Int neighborPos = current + Directions[d];
+            if (!InBounds(neighborPos)) continue;
+
+            WFCCell neighbor = grid[neighborPos.x, neighborPos.y, neighborPos.z];
+            if (neighbor.collapsed) continue;
+
+            HashSet<int> allowed = new HashSet<int>();
+            foreach (int tileIdx in currentCell.possibleTiles)
+                foreach (int allowedNeighbor in GetNeighbors(tiles[tileIdx], d))
+                    allowed.Add(allowedNeighbor);
+
+            int before = neighbor.possibleTiles.Count;
+            neighbor.possibleTiles.RemoveAll(t => !allowed.Contains(t));
+
+            if (neighbor.IsContradiction) return false;
+
+            if (neighbor.possibleTiles.Count < before)
+                queue.Enqueue(neighborPos);
+        }
+    }
+
+    return true;
+}
 
     // ── Step 0: Initialise ────────────────────────────────────────────────────
     private void InitialiseGrid()
@@ -177,13 +206,24 @@ public class WFCGenerator : MonoBehaviour
     {
         WFCCell cell = grid[pos.x, pos.y, pos.z];
 
-        // Weighted random selection
-        float totalWeight = cell.possibleTiles.Sum(i => tiles[i].weight);
+        int baseTransitionIndex = tiles.Length - moduleGenerator.numberOfLayers;
+
+        // Only consider non-transition tiles for normal collapse
+        List<int> candidates = cell.possibleTiles
+            .Where(i => i < baseTransitionIndex)
+            .ToList();
+
+        // Fall back to all possible tiles if filtering left nothing
+        // (shouldn't happen if propagation is working, but safe to handle)
+        if (candidates.Count == 0)
+            candidates = cell.possibleTiles;
+
+        float totalWeight = candidates.Sum(i => tiles[i].weight);
         float roll = Random.value * totalWeight;
         float cumulative = 0f;
-        int chosen = cell.possibleTiles[0];
+        int chosen = candidates[0];
 
-        foreach (int i in cell.possibleTiles)
+        foreach (int i in candidates)
         {
             cumulative += tiles[i].weight;
             if (roll <= cumulative) { chosen = i; break; }
@@ -193,7 +233,91 @@ public class WFCGenerator : MonoBehaviour
         cell.collapsedTileIndex = chosen;
         cell.possibleTiles = new List<int> { chosen };
     }
+    
+    private bool CollapseTransitions(List<Vector3Int> preCollapsedPositions)
+    {
+        int baseTransitionIndex = tiles.Length - moduleGenerator.numberOfLayers;
+        int[] prevEdges = new int[transitions];
+        List<int> edgePool = new List<int> { 0, 1, 2, 3 };
+        ShuffleList(edgePool);
 
+        for (int i = 0; i < transitions; i++)
+        {
+            int tileIndex = baseTransitionIndex + Random.Range(0, moduleGenerator.numberOfLayers);
+
+            if (tileIndex < 0 || tileIndex >= tiles.Length)
+            {
+                Debug.LogError($"CollapseTransitions: tile index {tileIndex} out of range.");
+                return false;
+            }
+
+            int edgeType;
+
+            // Pick a unique edgeType
+            do
+            {
+                edgeType = edgePool[Random.Range(0, edgePool.Count)];
+            }
+            while (System.Array.Exists(prevEdges, e => e == edgeType));
+
+            // Store it so it can't be reused
+            prevEdges[i] = edgeType;
+
+            Debug.Log(edgeType);
+
+            var edge = GetEdgeIndex(gridX, gridZ, edgeType);
+            int x = edge.row;
+            int z = edge.col;
+
+            if (x < 0 || x >= gridX || z < 0 || z >= gridZ)
+            {
+                Debug.LogError($"CollapseTransitions: edge pos ({x},0,{z}) out of grid.");
+                return false;
+            }
+
+            WFCCell cell = grid[x, 0, z];
+            cell.collapsed = true;
+            cell.collapsedTileIndex = tileIndex;
+            cell.possibleTiles = new List<int> { tileIndex };
+
+            preCollapsedPositions.Add(new Vector3Int(x, 0, z));
+        }
+
+        return true;
+    }
+    
+// Deterministic version — takes edgeType as a parameter
+    public (int row, int col) GetEdgeIndex(int rows, int cols, int edgeType)
+    {
+        if (rows <= 0 || cols <= 0)
+            throw new ArgumentException("Matrix dimensions must be positive.");
+
+        switch (edgeType)
+        {
+            case 0: return (0, Random.Range(0, cols));              // Top row
+            case 1: return (rows - 1, Random.Range(0, cols));       // Bottom row
+            case 2: return (Random.Range(0, rows), 0);              // Left column
+            case 3: return (Random.Range(0, rows), cols - 1);       // Right column
+            default: throw new Exception("Unexpected edge type");
+        }
+    }
+
+// Keep your original if needed elsewhere — renamed for clarity
+    public (int row, int col) GetRandomEdgeIndex(int rows, int cols)
+    {
+        return GetEdgeIndex(rows, cols, Random.Range(0, 4));
+    }
+
+    private void ShuffleList<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
+    }
+   
+    
     // ── Step 3: Propagate  ───────────────────────────────────
     private bool Propagate(Vector3Int start)
     {
