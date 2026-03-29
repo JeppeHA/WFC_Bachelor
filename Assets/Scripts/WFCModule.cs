@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WFCTile", menuName = "WFC/Tile")]
-public class WFCTile : ScriptableObject
+public class WFCModule : ScriptableObject
 {
     public GameObject obj;
     public int layer;

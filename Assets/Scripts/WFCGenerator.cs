@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
 public class WFCGenerator : MonoBehaviour
@@ -14,8 +15,8 @@ public class WFCGenerator : MonoBehaviour
     public int gridZ = 8;
     public float cellSize = 1f;
 
-    [Header("Tiles")]
-    public WFCTile[] tiles;
+    [Header("Modules")]
+    public WFCModule[] modules;
     public MeshCombiner meshCombiner;
 
     [Header("Generation")]
@@ -27,7 +28,7 @@ public class WFCGenerator : MonoBehaviour
 
     [Header("PreSpawns")] 
     public int transitions;
-    public WFCTile[] transitionModules;
+    public WFCModule[] transitionModules;
     
 
     // ── Internal state ────────────────────────────────────────────────────────
@@ -44,15 +45,15 @@ public class WFCGenerator : MonoBehaviour
         Vector3Int.back     // 5 → negZ
     };
 
-    // Returns the allowed-neighbor array for a tile in a given direction index.
-    private int[] GetNeighbors(WFCTile tile, int dirIndex) => dirIndex switch
+    // Returns the allowed-neighbor array for a module in a given direction index.
+    private int[] GetNeighbors(WFCModule module, int dirIndex) => dirIndex switch
     {
-        0 => tile.posXNeighbors,
-        1 => tile.negXNeighbors,
-        2 => tile.posYNeighbors,
-        3 => tile.negYNeighbors,
-        4 => tile.posZNeighbors,
-        5 => tile.negZNeighbors,
+        0 => module.posXNeighbors,
+        1 => module.negXNeighbors,
+        2 => module.posYNeighbors,
+        3 => module.negYNeighbors,
+        4 => module.posZNeighbors,
+        5 => module.negZNeighbors,
         _ => new int[0]
     };
 
@@ -62,7 +63,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
     {
-        tiles = moduleGenerator.GetModules().ToArray();
+        modules = moduleGenerator.GetModules().ToArray();
    
         if (generateOnStart) StartCoroutine(GenerateCoroutine());
     }
@@ -119,7 +120,7 @@ public class WFCGenerator : MonoBehaviour
 
         if (success)
         {
-            SpawnTiles();
+            SpawnModules();
             Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
             yield break;
         }
@@ -154,16 +155,16 @@ private bool PropagateAll(List<Vector3Int> starts)
             if (neighbor.collapsed) continue;
 
             HashSet<int> allowed = new HashSet<int>();
-            foreach (int tileIdx in currentCell.possibleTiles)
-                foreach (int allowedNeighbor in GetNeighbors(tiles[tileIdx], d))
+            foreach (int moduleIdx in currentCell.possibleModules)
+                foreach (int allowedNeighbor in GetNeighbors(modules[moduleIdx], d))
                     allowed.Add(allowedNeighbor);
 
-            int before = neighbor.possibleTiles.Count;
-            neighbor.possibleTiles.RemoveAll(t => !allowed.Contains(t));
+            int before = neighbor.possibleModules.Count;
+            neighbor.possibleModules.RemoveAll(t => !allowed.Contains(t));
 
             if (neighbor.IsContradiction) return false;
 
-            if (neighbor.possibleTiles.Count < before)
+            if (neighbor.possibleModules.Count < before)
                 queue.Enqueue(neighborPos);
         }
     }
@@ -178,7 +179,7 @@ private bool PropagateAll(List<Vector3Int> starts)
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
         for (int z = 0; z < gridZ; z++)
-            grid[x, y, z] = new WFCCell(tiles.Length);
+            grid[x, y, z] = new WFCCell(modules.Length);
     }
 
     // ── Step 1: Observe (lowest entropy) ─────────────────────────────────────
@@ -194,7 +195,7 @@ private bool PropagateAll(List<Vector3Int> starts)
             WFCCell cell = grid[x, y, z];
             if (cell.collapsed) continue;
 
-            float e = cell.Entropy(tiles) + Random.value * 0.01f; // tiny noise breaks ties
+            float e = cell.Entropy(modules) + Random.value * 0.01f; // tiny noise breaks ties
             if (e < minEntropy) { minEntropy = e; best = new Vector3Int(x, y, z); }
         }
 
@@ -206,48 +207,48 @@ private bool PropagateAll(List<Vector3Int> starts)
     {
         WFCCell cell = grid[pos.x, pos.y, pos.z];
 
-        int baseTransitionIndex = tiles.Length - moduleGenerator.numberOfLayers;
+        int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
 
-        // Only consider non-transition tiles for normal collapse
-        List<int> candidates = cell.possibleTiles
+        // Only consider non-transition modules for normal collapse
+        List<int> candidates = cell.possibleModules
             .Where(i => i < baseTransitionIndex)
             .ToList();
 
-        // Fall back to all possible tiles if filtering left nothing
+        // Fall back to all possible modules if filtering left nothing
         // (shouldn't happen if propagation is working, but safe to handle)
         if (candidates.Count == 0)
-            candidates = cell.possibleTiles;
+            candidates = cell.possibleModules;
 
-        float totalWeight = candidates.Sum(i => tiles[i].weight);
+        float totalWeight = candidates.Sum(i => modules[i].weight);
         float roll = Random.value * totalWeight;
         float cumulative = 0f;
         int chosen = candidates[0];
 
         foreach (int i in candidates)
         {
-            cumulative += tiles[i].weight;
+            cumulative += modules[i].weight;
             if (roll <= cumulative) { chosen = i; break; }
         }
 
         cell.collapsed = true;
-        cell.collapsedTileIndex = chosen;
-        cell.possibleTiles = new List<int> { chosen };
+        cell.collapsedModuleIndex = chosen;
+        cell.possibleModules = new List<int> { chosen };
     }
     
     private bool CollapseTransitions(List<Vector3Int> preCollapsedPositions)
     {
-        int baseTransitionIndex = tiles.Length - moduleGenerator.numberOfLayers;
+        int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
         int[] prevEdges = new int[transitions];
         List<int> edgePool = new List<int> { 0, 1, 2, 3 };
         ShuffleList(edgePool);
 
         for (int i = 0; i < transitions; i++)
         {
-            int tileIndex = baseTransitionIndex + Random.Range(0, moduleGenerator.numberOfLayers);
+            int moduleIndex = baseTransitionIndex + Random.Range(0, moduleGenerator.numberOfLayers);
 
-            if (tileIndex < 0 || tileIndex >= tiles.Length)
+            if (moduleIndex < 0 || moduleIndex >= modules.Length)
             {
-                Debug.LogError($"CollapseTransitions: tile index {tileIndex} out of range.");
+                Debug.LogError($"CollapseTransitions: module index {moduleIndex} out of range.");
                 return false;
             }
 
@@ -277,8 +278,8 @@ private bool PropagateAll(List<Vector3Int> starts)
 
             WFCCell cell = grid[x, 0, z];
             cell.collapsed = true;
-            cell.collapsedTileIndex = tileIndex;
-            cell.possibleTiles = new List<int> { tileIndex };
+            cell.collapsedModuleIndex = moduleIndex;
+            cell.possibleModules = new List<int> { moduleIndex };
 
             preCollapsedPositions.Add(new Vector3Int(x, 0, z));
         }
@@ -340,20 +341,20 @@ private bool PropagateAll(List<Vector3Int> starts)
                 WFCCell neighbor = grid[neighborPos.x, neighborPos.y, neighborPos.z];
                 if (neighbor.collapsed) continue;
 
-                // Collect all tile IDs that currentCell allows in direction d
+                // Collect all module IDs that currentCell allows in direction d
                 HashSet<int> allowed = new HashSet<int>();
-                foreach (int tileIdx in currentCell.possibleTiles)
-                    foreach (int allowedNeighbor in GetNeighbors(tiles[tileIdx], d))
+                foreach (int moduleIdx in currentCell.possibleModules)
+                    foreach (int allowedNeighbor in GetNeighbors(modules[moduleIdx], d))
                         allowed.Add(allowedNeighbor);
 
-                // Remove from neighbor any tile NOT in allowed set
-                int before = neighbor.possibleTiles.Count;
-                neighbor.possibleTiles.RemoveAll(t => !allowed.Contains(t));
+                // Remove from neighbor any module NOT in allowed set
+                int before = neighbor.possibleModules.Count;
+                neighbor.possibleModules.RemoveAll(t => !allowed.Contains(t));
 
                 if (neighbor.IsContradiction) return false;
 
                 // If we removed options, the neighbor must re-propagate
-                if (neighbor.possibleTiles.Count < before)
+                if (neighbor.possibleModules.Count < before)
                     queue.Enqueue(neighborPos);
             }
         }
@@ -362,47 +363,28 @@ private bool PropagateAll(List<Vector3Int> starts)
     }
 
     // ── Step 4: Spawn ─────────────────────────────────────────────────────────
-    private void SpawnTiles()
+    private void SpawnModules()
     {
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
         for (int z = 0; z < gridZ; z++)
         {
             WFCCell cell = grid[x, y, z];
-            if (!cell.collapsed || cell.collapsedTileIndex < 0) continue;
+            if (!cell.collapsed || cell.collapsedModuleIndex < 0) continue;
 
-            WFCTile tile = tiles[cell.collapsedTileIndex];
-            if (tile.obj == null) continue;
+            WFCModule module = modules[cell.collapsedModuleIndex];
+            if (module.obj == null) continue;
 
             Vector3 worldPos;
-            if (tile.name.ToLower().Contains("stair"))
+            if (module.name.ToLower().Contains("stair"))
             {
-              worldPos = transform.position + new Vector3(x, tile.layer + 1, z) * cellSize;
+              worldPos = transform.position + new Vector3(x, module.layer + 1, z) * cellSize;
             }
-            worldPos = transform.position + new Vector3(x, tile.layer, z) * cellSize;
+            worldPos = transform.position + new Vector3(x, module.layer, z) * cellSize;
             
-            GameObject go = Instantiate(tile.obj, worldPos, Quaternion.identity, transform);
+            GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, transform);
             spawnedObjects.Add(go);
         }
-    }
-
-    private IEnumerator SpawnTilesE()
-    {
-        for (int x = 0; x < gridX; x++)
-            for (int y = 0; y < gridY; y++)
-                for (int z = 0; z < gridZ; z++)
-                {
-                    WFCCell cell = grid[x, y, z];
-                    if (!cell.collapsed || cell.collapsedTileIndex < 0) continue;
-
-                    WFCTile tile = tiles[cell.collapsedTileIndex];
-                    if (tile.obj == null) continue;
-
-                    Vector3 worldPos = transform.position + new Vector3(x, y, z) * cellSize;
-                    GameObject go = Instantiate(tile.obj, worldPos, Quaternion.identity, transform);
-                    spawnedObjects.Add(go);
-                    yield return new WaitForSeconds(0.1f);
-                }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

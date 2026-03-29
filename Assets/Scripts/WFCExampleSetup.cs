@@ -17,6 +17,7 @@ using UnityEditor;
 
 public static class WFCExampleSetup
 {
+    /*
     [MenuItem("GameObject/WFC/Create Example Tiles", false, 10)]
     static void CreateExampleTiles()
     {
@@ -65,5 +66,6 @@ public static class WFCExampleSetup
         Debug.Log($"Created example tiles in {folder}. " +
                   "Assign them to WFCGenerator.tiles[] in order: Air(0), Grass(1), Dirt(2).");
     }
+    */
 }
 #endif

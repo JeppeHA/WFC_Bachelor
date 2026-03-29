@@ -289,7 +289,7 @@ MonoBehaviour:
   gridY: 1
   gridZ: 16
   cellSize: 2
-  tiles: []
+  modules: []
   meshCombiner: {fileID: 0}
   generateOnStart: 1
   moduleGenerator: {fileID: 1607884180}

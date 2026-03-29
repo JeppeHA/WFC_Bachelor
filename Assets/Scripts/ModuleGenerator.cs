@@ -13,16 +13,14 @@ public class ModuleGenerator : MonoBehaviour
 {
     [Header("Layer Configuration")]
     public int numberOfLayers;
-    public List<WFCTile> layerObjects; // Must follow ground-then-stairs order
+    public List<WFCModule> layerObjects; // Must follow ground-then-stairs order
 
     [Header("Module Data")]
-    [SerializeField] private List<WFCTile> modules;
-    [SerializeField] private List<WFCTile> transitions;
-
-    private int Stride => layerObjects.Count + transitions.Count;
+    [SerializeField] private List<WFCModule> modules;
+    [SerializeField] private List<WFCModule> transitions;
+    
     private int currentFloorIndex = 0;
-
-    // ─── Unity Lifecycle ───────────────────────────────────────────────────────
+    
 
     private void Awake() => CreateModules();
 
@@ -40,20 +38,20 @@ public class ModuleGenerator : MonoBehaviour
     {
         for (int layer = 0; layer < numberOfLayers; layer++)
         {
-            foreach (WFCTile tile in layerObjects)
+            foreach (WFCModule module in layerObjects)
             {
                 if (layer == 0)
                 {
-                    AddModule(tile);
+                    AddModule(module);
                     continue;
                 }
 
-                int[][] neighbors = AssignNeighbors(layer, tile);
+                int[][] neighbors = AssignNeighbors(layer, module);
                 if (neighbors == null) continue;
 
                 Debug.Log($"Neighbor count: {neighbors.Length}");
-                WFCTile module = CreateModule(layer, tile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], tile.weight);
-                AddModule(module);
+                WFCModule temp_module = CreateModule(layer, module.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], module.weight);
+                AddModule(temp_module);
             }
         }
     }
@@ -62,9 +60,9 @@ public class ModuleGenerator : MonoBehaviour
     private void CreateTopFloorCap()
     {
         Debug.Log("Creating top floor cap");
-        WFCTile baseTile = layerObjects[0];
+        WFCModule baseTile = layerObjects[0];
         int[][] neighbors = AssignNeighbors(numberOfLayers, baseTile);
-        WFCTile capModule = CreateModule(numberOfLayers, baseTile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], baseTile.weight);
+        WFCModule capModule = CreateModule(numberOfLayers, baseTile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], baseTile.weight);
         AddModule(capModule);
     }
 
@@ -72,10 +70,10 @@ public class ModuleGenerator : MonoBehaviour
     {
         for (int layer = 0; layer < numberOfLayers; layer++)
         {
-            foreach (WFCTile transition in transitions)
+            foreach (WFCModule transition in transitions)
             {
                 int[][] neighbors = AssignDoorNeighbors(layer);
-                WFCTile module = CreateModule(layer, transition.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], transition.weight);
+                WFCModule module = CreateModule(layer, transition.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], transition.weight);
                 AddModule(module);
             }
         }
@@ -111,7 +109,7 @@ public class ModuleGenerator : MonoBehaviour
 
     // ─── Neighbor Assignment ───────────────────────────────────────────────────
     
-    private int[][] AssignNeighbors(int layer, WFCTile tile)
+    private int[][] AssignNeighbors(int layer, WFCModule tile)
     {
         string tileName = tile.name.ToLower();
 
@@ -207,11 +205,11 @@ public class ModuleGenerator : MonoBehaviour
     
     // Module factory
 
-    private WFCTile CreateModule(int layer, GameObject obj, int[] posX, int[] negX, int[] posZ, int[] negZ, float weight)
+    private WFCModule CreateModule(int layer, GameObject obj, int[] posX, int[] negX, int[] posZ, int[] negZ, float weight)
     {
         Debug.Log($"Creating module for layer {layer}");
 
-        WFCTile module = ScriptableObject.CreateInstance<WFCTile>();
+        WFCModule module = ScriptableObject.CreateInstance<WFCModule>();
         module.layer         = layer;
         module.obj           = obj;
         module.posXNeighbors = posX;
@@ -226,8 +224,8 @@ public class ModuleGenerator : MonoBehaviour
         return module;
     }
 
-    private void AddModule(WFCTile module)     => modules.Add(module);
-    private void AddTransition(WFCTile module) => transitions.Add(module);
+    private void AddModule(WFCModule module)     => modules.Add(module);
+    private void AddTransition(WFCModule module) => transitions.Add(module);
 
-    public List<WFCTile> GetModules() => modules;
+    public List<WFCModule> GetModules() => modules;
 }

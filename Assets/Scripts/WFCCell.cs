@@ -7,21 +7,21 @@ using System.Linq;
 /// </summary>
 public class WFCCell
 {
-    public List<int> possibleTiles; // Indices into the tile list
+    public List<int> possibleModules; // Indices into the tile list
     public bool collapsed = false;
-    public int collapsedTileIndex = -1;
+    public int collapsedModuleIndex = -1;
 
     public WFCCell(int totalTiles)
     {
-        possibleTiles = Enumerable.Range(0, totalTiles).ToList();
+        possibleModules = Enumerable.Range(0, totalTiles).ToList();
     }
 
     /// <summary>Shannon entropy weighted by tile weights.</summary>
-    public float Entropy(WFCTile[] tiles)
+    public float Entropy(WFCModule[] tiles)
     {
-        float totalWeight = possibleTiles.Sum(i => tiles[i].weight);
+        float totalWeight = possibleModules.Sum(i => tiles[i].weight);
         float entropy = 0f;
-        foreach (int i in possibleTiles)
+        foreach (int i in possibleModules)
         {
             float p = tiles[i].weight / totalWeight;
             if (p > 0f) entropy -= p * UnityEngine.Mathf.Log(p);
@@ -29,5 +29,5 @@ public class WFCCell
         return entropy;
     }
 
-    public bool IsContradiction => possibleTiles.Count == 0 && !collapsed;
+    public bool IsContradiction => possibleModules.Count == 0 && !collapsed;
 }
