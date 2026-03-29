@@ -28,7 +28,6 @@ public class WFCGenerator : MonoBehaviour
 
     [Header("PreSpawns")] 
     public int transitions;
-    public WFCModule[] transitionModules;
     
 
     // ── Internal state ────────────────────────────────────────────────────────
@@ -56,9 +55,6 @@ public class WFCGenerator : MonoBehaviour
         5 => module.negZNeighbors,
         _ => new int[0]
     };
-
-    // Opposite direction index (needed for constraint propagation)
-    private int Opposite(int dir) => dir ^ 1;
 
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
@@ -131,46 +127,7 @@ public class WFCGenerator : MonoBehaviour
 
 
 
-// Seeds queue with every pinned cell so all constraints spread simultaneously
-private bool PropagateAll(List<Vector3Int> starts)
-{
-    Queue<Vector3Int> queue = new Queue<Vector3Int>();
 
-    foreach (var pos in starts)
-        queue.Enqueue(pos);
-
-    while (queue.Count > 0)
-    {
-        Vector3Int current = queue.Dequeue();
-        WFCCell currentCell = grid[current.x, current.y, current.z];
-
-        for (int d = 0; d < 6; d++)
-        {
-            if (d == 2 || d == 3) continue; // skip Y
-
-            Vector3Int neighborPos = current + Directions[d];
-            if (!InBounds(neighborPos)) continue;
-
-            WFCCell neighbor = grid[neighborPos.x, neighborPos.y, neighborPos.z];
-            if (neighbor.collapsed) continue;
-
-            HashSet<int> allowed = new HashSet<int>();
-            foreach (int moduleIdx in currentCell.possibleModules)
-                foreach (int allowedNeighbor in GetNeighbors(modules[moduleIdx], d))
-                    allowed.Add(allowedNeighbor);
-
-            int before = neighbor.possibleModules.Count;
-            neighbor.possibleModules.RemoveAll(t => !allowed.Contains(t));
-
-            if (neighbor.IsContradiction) return false;
-
-            if (neighbor.possibleModules.Count < before)
-                queue.Enqueue(neighborPos);
-        }
-    }
-
-    return true;
-}
 
     // ── Step 0: Initialise ────────────────────────────────────────────────────
     private void InitialiseGrid()
@@ -215,7 +172,6 @@ private bool PropagateAll(List<Vector3Int> starts)
             .ToList();
 
         // Fall back to all possible modules if filtering left nothing
-        // (shouldn't happen if propagation is working, but safe to handle)
         if (candidates.Count == 0)
             candidates = cell.possibleModules;
 
@@ -240,7 +196,7 @@ private bool PropagateAll(List<Vector3Int> starts)
         int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
         int[] prevEdges = new int[transitions];
         List<int> edgePool = new List<int> { 0, 1, 2, 3 };
-        ShuffleList(edgePool);
+        //ShuffleList(edgePool);
 
         for (int i = 0; i < transitions; i++)
         {
@@ -260,8 +216,7 @@ private bool PropagateAll(List<Vector3Int> starts)
                 edgeType = edgePool[Random.Range(0, edgePool.Count)];
             }
             while (System.Array.Exists(prevEdges, e => e == edgeType));
-
-            // Store it so it can't be reused
+            
             prevEdges[i] = edgeType;
 
             Debug.Log(edgeType);
@@ -287,7 +242,6 @@ private bool PropagateAll(List<Vector3Int> starts)
         return true;
     }
     
-// Deterministic version — takes edgeType as a parameter
     public (int row, int col) GetEdgeIndex(int rows, int cols, int edgeType)
     {
         if (rows <= 0 || cols <= 0)
@@ -302,13 +256,7 @@ private bool PropagateAll(List<Vector3Int> starts)
             default: throw new Exception("Unexpected edge type");
         }
     }
-
-// Keep your original if needed elsewhere — renamed for clarity
-    public (int row, int col) GetRandomEdgeIndex(int rows, int cols)
-    {
-        return GetEdgeIndex(rows, cols, Random.Range(0, 4));
-    }
-
+    
     private void ShuffleList<T>(List<T> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
@@ -354,6 +302,48 @@ private bool PropagateAll(List<Vector3Int> starts)
                 if (neighbor.IsContradiction) return false;
 
                 // If we removed options, the neighbor must re-propagate
+                if (neighbor.possibleModules.Count < before)
+                    queue.Enqueue(neighborPos);
+            }
+        }
+
+        return true;
+    }
+    
+    
+    // Seeds queue with every pinned cell so all constraints spread simultaneously
+    private bool PropagateAll(List<Vector3Int> starts)
+    {
+        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+
+        foreach (var pos in starts)
+            queue.Enqueue(pos);
+
+        while (queue.Count > 0)
+        {
+            Vector3Int current = queue.Dequeue();
+            WFCCell currentCell = grid[current.x, current.y, current.z];
+
+            for (int d = 0; d < 6; d++)
+            {
+                if (d == 2 || d == 3) continue; // skip Y
+
+                Vector3Int neighborPos = current + Directions[d];
+                if (!InBounds(neighborPos)) continue;
+
+                WFCCell neighbor = grid[neighborPos.x, neighborPos.y, neighborPos.z];
+                if (neighbor.collapsed) continue;
+
+                HashSet<int> allowed = new HashSet<int>();
+                foreach (int moduleIdx in currentCell.possibleModules)
+                foreach (int allowedNeighbor in GetNeighbors(modules[moduleIdx], d))
+                    allowed.Add(allowedNeighbor);
+
+                int before = neighbor.possibleModules.Count;
+                neighbor.possibleModules.RemoveAll(t => !allowed.Contains(t));
+
+                if (neighbor.IsContradiction) return false;
+
                 if (neighbor.possibleModules.Count < before)
                     queue.Enqueue(neighborPos);
             }

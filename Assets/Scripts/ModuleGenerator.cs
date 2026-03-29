@@ -49,7 +49,6 @@ public class ModuleGenerator : MonoBehaviour
                 int[][] neighbors = AssignNeighbors(layer, module);
                 if (neighbors == null) continue;
 
-                Debug.Log($"Neighbor count: {neighbors.Length}");
                 WFCModule temp_module = CreateModule(layer, module.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], module.weight);
                 AddModule(temp_module);
             }
@@ -59,7 +58,6 @@ public class ModuleGenerator : MonoBehaviour
     /// <summary>Adds a final floor cap above the topmost layer.</summary>
     private void CreateTopFloorCap()
     {
-        Debug.Log("Creating top floor cap");
         WFCModule baseTile = layerObjects[0];
         int[][] neighbors = AssignNeighbors(numberOfLayers, baseTile);
         WFCModule capModule = CreateModule(numberOfLayers, baseTile.obj, neighbors[0], neighbors[1], neighbors[4], neighbors[5], baseTile.weight);
@@ -79,34 +77,7 @@ public class ModuleGenerator : MonoBehaviour
         }
     }
 
-    private void UpdateIndices()
-    {
-        int amountOfTransitions = modules.Count - numberOfLayers;
-        int index = amountOfTransitions + 1;
-        for (int i = 0; i < modules.Count; i+=3)
-        {
-            if(i == 0)
-                continue;
-            if(i >= layerObjects.Count * numberOfLayers)
-                continue;
-            
-            int[][] temp = new int[4][];
-            temp[0] = modules[i].posXNeighbors;
-            temp[1] = modules[i].negXNeighbors;
-            temp[2] = modules[i].posZNeighbors;
-            temp[3] = modules[i].negZNeighbors;
-            
-            int[] indexs = {index};
-          
-            modules[i].posXNeighbors = modules[i].posXNeighbors.Union(indexs).ToArray();
-            modules[i].negXNeighbors = modules[i].negXNeighbors.Union(indexs).ToArray();
-            modules[i].posZNeighbors = modules[i].posZNeighbors.Union(indexs).ToArray();
-            modules[i].negZNeighbors = modules[i].negZNeighbors.Union(indexs).ToArray();
-            index++;
-
-        }
-    }
-
+    
     // ─── Neighbor Assignment ───────────────────────────────────────────────────
     
     private int[][] AssignNeighbors(int layer, WFCModule tile)
@@ -202,6 +173,35 @@ public class ModuleGenerator : MonoBehaviour
             sameFloor,    // -Z
         };
     }
+    
+    private void UpdateIndices()
+    {
+        int amountOfTransitions = modules.Count - numberOfLayers;
+        int index = amountOfTransitions + 1;
+        for (int i = 0; i < modules.Count; i+=3)
+        {
+            if(i == 0)
+                continue;
+            if(i >= layerObjects.Count * numberOfLayers)
+                continue;
+            
+            int[][] temp = new int[4][];
+            temp[0] = modules[i].posXNeighbors;
+            temp[1] = modules[i].negXNeighbors;
+            temp[2] = modules[i].posZNeighbors;
+            temp[3] = modules[i].negZNeighbors;
+            
+            int[] indexs = {index};
+          
+            modules[i].posXNeighbors = modules[i].posXNeighbors.Union(indexs).ToArray();
+            modules[i].negXNeighbors = modules[i].negXNeighbors.Union(indexs).ToArray();
+            modules[i].posZNeighbors = modules[i].posZNeighbors.Union(indexs).ToArray();
+            modules[i].negZNeighbors = modules[i].negZNeighbors.Union(indexs).ToArray();
+            index++;
+
+        }
+    }
+
     
     // Module factory
 
