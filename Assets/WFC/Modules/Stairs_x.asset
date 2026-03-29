@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5162d60b5c8f59c42b63a8fda2ad276e, type: 3}
+  m_Name: Stairs_x
+  m_EditorClassIdentifier: Assembly-CSharp::WFCTile
+  obj: {fileID: 1116141296413002563, guid: 73cc7db93d9bcc246b17b6cf0fad85a7, type: 3}
+  layer: 0
+  posXNeighbors: 03000000
+  negXNeighbors: 00000000
+  posYNeighbors: ffffffff
+  negYNeighbors: ffffffff
+  posZNeighbors: 0200000003000000
+  negZNeighbors: 0200000003000000
+  weight: 10
