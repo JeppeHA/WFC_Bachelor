@@ -69,6 +69,7 @@ public class WFCGenerator : MonoBehaviour
     {
         StopAllCoroutines();
         StartCoroutine(GenerateCoroutine());
+       
     }
 
     // ── Core algorithm ────────────────────────────────────────────────────────
@@ -108,6 +109,7 @@ public class WFCGenerator : MonoBehaviour
             if (!Propagate(cell.Value))
             {
                 Debug.LogWarning($"WFC contradiction on attempt {attempt + 1}. Retrying…");
+                meshCombiner.Combine();
                 break;
             }
 
@@ -118,6 +120,7 @@ public class WFCGenerator : MonoBehaviour
         {
             SpawnModules();
             Debug.Log($"WFC finished successfully on attempt {attempt + 1}.");
+            meshCombiner.Combine();
             yield break;
         }
     }
@@ -374,6 +377,7 @@ public class WFCGenerator : MonoBehaviour
             
             GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, transform);
             spawnedObjects.Add(go);
+            meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
         }
     }
 

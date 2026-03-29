@@ -12,9 +12,11 @@ public class MeshCombiner : MonoBehaviour
     [ContextMenu("Combine Meshes")]
     private void CombineMesh()
     {
+        Debug.Log("Combine Meshes!!!");
         //Make an array of CombineInstance.
         var combine = new CombineInstance[listMeshFilter.Count];
-
+            
+        Debug.Log(listMeshFilter.Count);
         //Set Mesh And their Transform to the CombineInstance
         for (int i = 0; i < listMeshFilter.Count; i++)
         {
@@ -34,8 +36,7 @@ public class MeshCombiner : MonoBehaviour
         // Print Results
         print($"<color=#20E7B0>Combine Meshes was Successful!</color>");
     }
-
-
+    
     public void Combine()
     {
         CombineMesh();
