@@ -7,7 +7,7 @@ public class MapGraph : MonoBehaviour
 
     void Start()
     {
-        GenerateFirstRoom();
+        //GenerateFirstRoom();
     }
     
     private void GenerateRoom()

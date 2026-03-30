@@ -395,7 +395,7 @@ MonoBehaviour:
   stepByStep: 0
   stepDelay: 0.05
   maxRetries: 20
-  transitions: 3
+  transitions: 4
 --- !u!4 &985481019
 Transform:
   m_ObjectHideFlags: 0
@@ -900,7 +900,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08ac353a371cb39488bb684dfb5edf09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ModuleGenerator
-  numberOfLayers: 4
+  numberOfLayers: 8
   layerObjects:
   - {fileID: 11400000, guid: 4d158cee566d22d4d824780539f90959, type: 2}
   - {fileID: 11400000, guid: f17796f02e119a543b062bdf32e43e12, type: 2}
