@@ -9,26 +9,26 @@ public class MapGraph : MonoBehaviour
     void Start()
     {
         nodes = new List<MapNode>();
-        GenerateFirstRoom();
+        GenerateNode();
+        Debug.Log(nodes.Count);
+        Debug.Log(nodes[0].map.name);
     }
     
-    private void GenerateRoom()
+    private GameObject GenerateRoom()
     {
-        
+        generator.modules = generator.moduleGenerator.GetModules().ToArray();
+        generator.Generate();
+        return generator.GetMap();
     }
 
-    private void GenerateFirstRoom()
+    private void GenerateNode()
     {
-        MapNode firstRoom = new MapNode();
-        firstRoom.SetNeighbors(new MapNode[Random.Range(1, 5)]); 
-        nodes.Add(firstRoom);
+        MapNode node = new MapNode();
+        node.SetNeighbors(new MapNode[Random.Range(1, 5)]);
+        node.map = GenerateRoom();
+        nodes.Add(node);
     }
-
-    private void GenerateMap()
-    {
-        
-    }
-
+    
     private void AssesPlayer()
     {
         

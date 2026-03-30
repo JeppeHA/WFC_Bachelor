@@ -391,14 +391,13 @@ MonoBehaviour:
   cellSize: 2
   modules: []
   meshCombiner: {fileID: 475867482}
-  generateOnStart: 1
+  generateOnStart: 0
   moduleGenerator: {fileID: 1607884180}
   stepByStep: 0
   stepDelay: 0.05
   maxRetries: 20
-  mapParentPrefab: {fileID: 3563533458469248232, guid: 2266701e0b651c643884573f456fa093, type: 3}
+  mapPrefab: {fileID: 3563533458469248232, guid: 2266701e0b651c643884573f456fa093, type: 3}
   transitions: 4
-  transitionsPoints: []
 --- !u!4 &985481019
 Transform:
   m_ObjectHideFlags: 0

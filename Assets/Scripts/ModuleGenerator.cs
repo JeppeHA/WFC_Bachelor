@@ -92,7 +92,6 @@ public class ModuleGenerator : MonoBehaviour
     private int[][] AssignZStairNeighbors(int layer)
     {
         currentFloorIndex = layerObjects.Count * layer;
-        Debug.Log($"Z-Stair floor index: {currentFloorIndex}");
 
         int nextFloor = currentFloorIndex + layerObjects.Count;
 

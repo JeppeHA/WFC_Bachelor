@@ -25,6 +25,8 @@ public class WFCGenerator : MonoBehaviour
     public bool stepByStep = false;         // Slow-motion debug mode
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
+    public GameObject mapPrefab;
+    private GameObject mapParent;
 
     [Header("PreSpawns")] 
     public int transitions;
@@ -59,9 +61,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
     private void Start()
     {
-        modules = moduleGenerator.GetModules().ToArray();
-   
-        if (generateOnStart) StartCoroutine(GenerateCoroutine());
+        
     }
 
     [ContextMenu("Generate")]
@@ -361,6 +361,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Step 4: Spawn ─────────────────────────────────────────────────────────
     private void SpawnModules()
     {
+        mapParent = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity);
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
         for (int z = 0; z < gridZ; z++)
@@ -378,7 +379,7 @@ public class WFCGenerator : MonoBehaviour
             }
             worldPos = transform.position + new Vector3(x, module.layer, z) * cellSize;
             
-            GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, transform);
+            GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, mapParent.transform);
             spawnedObjects.Add(go);
             meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
         }
@@ -405,5 +406,10 @@ public class WFCGenerator : MonoBehaviour
         Vector3 gridCenter = transform.position + new Vector3(gridX, gridY, gridZ) * cellSize * 0.5f;
         Gizmos.DrawWireCube(gridCenter - Vector3.one * cellSize * 0.5f,
                             new Vector3(gridX, gridY, gridZ) * cellSize);
+    }
+
+    public GameObject GetMap()
+    {
+        return mapParent;
     }
 }
