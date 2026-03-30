@@ -207,7 +207,6 @@ public class ModuleGenerator : MonoBehaviour
 
     private WFCModule CreateModule(int layer, GameObject obj, int[] posX, int[] negX, int[] posZ, int[] negZ, float weight)
     {
-        Debug.Log($"Creating module for layer {layer}");
 
         WFCModule module = ScriptableObject.CreateInstance<WFCModule>();
         module.layer         = layer;

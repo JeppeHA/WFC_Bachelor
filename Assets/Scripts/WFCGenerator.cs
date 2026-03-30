@@ -25,9 +25,13 @@ public class WFCGenerator : MonoBehaviour
     public bool stepByStep = false;         // Slow-motion debug mode
     public float stepDelay = 0.05f;
     public int maxRetries = 5;
+    public GameObject mapParentPrefab;
+    private GameObject mapParent;
 
     [Header("PreSpawns")] 
     public int transitions;
+    [SerializeField]
+    private List<Vector3> transitionsPoints = new List<Vector3>();
     
 
     // ── Internal state ────────────────────────────────────────────────────────
@@ -57,16 +61,11 @@ public class WFCGenerator : MonoBehaviour
     };
 
     // ── Unity lifecycle ────────────────────────────────────────-───────────────
-    private void Start()
-    {
-        modules = moduleGenerator.GetModules().ToArray();
-   
-        if (generateOnStart) StartCoroutine(GenerateCoroutine());
-    }
 
     [ContextMenu("Generate")]
     public void Generate()
     {
+        modules = moduleGenerator.GetModules().ToArray();
         StopAllCoroutines();
         StartCoroutine(GenerateCoroutine());
        
@@ -199,11 +198,12 @@ public class WFCGenerator : MonoBehaviour
         int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
         int[] prevEdges = new int[transitions];
         List<int> edgePool = new List<int> { 0, 1, 2, 3 };
-        //ShuffleList(edgePool);
 
         for (int i = 0; i < transitions; i++)
         {
             int moduleIndex = baseTransitionIndex + Random.Range(0, moduleGenerator.numberOfLayers);
+            
+            Debug.Log("ModuleIndex: " + moduleIndex);
 
             if (moduleIndex < 0 || moduleIndex >= modules.Length)
             {
@@ -227,6 +227,8 @@ public class WFCGenerator : MonoBehaviour
             var edge = GetEdgeIndex(gridX, gridZ, edgeType);
             int x = edge.row;
             int z = edge.col;
+            
+            
 
             if (x < 0 || x >= gridX || z < 0 || z >= gridZ)
             {
@@ -235,11 +237,12 @@ public class WFCGenerator : MonoBehaviour
             }
 
             WFCCell cell = grid[x, 0, z];
+            //transitionsPoints.Add(new Vector3(x,0,z));
             cell.collapsed = true;
             cell.collapsedModuleIndex = moduleIndex;
             cell.possibleModules = new List<int> { moduleIndex };
 
-            preCollapsedPositions.Add(new Vector3Int(x, 0, z));
+          
         }
 
         return true;
@@ -358,6 +361,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Step 4: Spawn ─────────────────────────────────────────────────────────
     private void SpawnModules()
     {
+        mapParent = Instantiate(mapParentPrefab, Vector3.zero, Quaternion.identity);
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
         for (int z = 0; z < gridZ; z++)
@@ -375,11 +379,14 @@ public class WFCGenerator : MonoBehaviour
             }
             worldPos = transform.position + new Vector3(x, module.layer, z) * cellSize;
             
-            GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, transform);
+            GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, mapParent.transform);
             spawnedObjects.Add(go);
             meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
         }
+        
     }
+    
+    
 
     // ── Helpers ───────────────────────────────────────────────────────────────
     private bool InBounds(Vector3Int p) =>
@@ -393,6 +400,11 @@ public class WFCGenerator : MonoBehaviour
         foreach (var go in spawnedObjects)
             if (go != null) DestroyImmediate(go);
         spawnedObjects.Clear();
+    }
+
+    public GameObject GetMap()
+    {
+        return mapParent;
     }
 
     // ── Gizmos ────────────────────────────────────────────────────────────────
