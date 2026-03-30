@@ -203,7 +203,6 @@ public class WFCGenerator : MonoBehaviour
             prevEdges[i] = -1;
         }
         List<int> edgePool = new List<int> { 0, 1, 2, 3};
-        //ShuffleList(edgePool);
 
         for (int i = 0; i < transitions; i++)
         {

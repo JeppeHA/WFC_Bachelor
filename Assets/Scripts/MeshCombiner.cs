@@ -15,8 +15,7 @@ public class MeshCombiner : MonoBehaviour
         Debug.Log("Combine Meshes!!!");
         //Make an array of CombineInstance.
         var combine = new CombineInstance[listMeshFilter.Count];
-            
-        Debug.Log(listMeshFilter.Count);
+        
         //Set Mesh And their Transform to the CombineInstance
         for (int i = 0; i < listMeshFilter.Count; i++)
         {

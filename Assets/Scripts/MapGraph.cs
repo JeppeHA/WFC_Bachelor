@@ -4,10 +4,12 @@ using UnityEngine;
 public class MapGraph : MonoBehaviour
 {
     public List<MapNode> nodes;
+    public WFCGenerator generator;
 
     void Start()
     {
-        //GenerateFirstRoom();
+        nodes = new List<MapNode>();
+        GenerateFirstRoom();
     }
     
     private void GenerateRoom()
