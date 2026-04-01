@@ -30,6 +30,8 @@ public class WFCGenerator : MonoBehaviour
 
     [Header("PreSpawns")] 
     public int transitions;
+    [SerializeField]
+    private List<Vector3> TransitionPositions = new List<Vector3>();
     
 
     // ── Internal state ────────────────────────────────────────────────────────
@@ -125,7 +127,9 @@ public class WFCGenerator : MonoBehaviour
         }
     }
 
-    Debug.LogError("WFC failed after all retries. Check your neighbor rules.");
+    Debug.LogWarning("WFC failed after all retries. Check your neighbor rules.");
+    StopAllCoroutines();
+    StartCoroutine(GenerateCoroutine());
 }
 
 
@@ -379,6 +383,10 @@ public class WFCGenerator : MonoBehaviour
             }
             worldPos = transform.position + new Vector3(x, module.layer, z) * cellSize;
             
+            if(module.name.ToLower().Contains("door"))
+                TransitionPositions.Add(worldPos);
+                
+            
             GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, mapParent.transform);
             spawnedObjects.Add(go);
             meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
@@ -411,5 +419,10 @@ public class WFCGenerator : MonoBehaviour
     public GameObject GetMap()
     {
         return mapParent;
+    }
+
+    public List<Vector3> GetTransitionPositions()
+    {
+        return TransitionPositions;
     }
 }
