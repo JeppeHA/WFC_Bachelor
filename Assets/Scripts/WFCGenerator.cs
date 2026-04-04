@@ -27,11 +27,21 @@ public class WFCGenerator : MonoBehaviour
     public int maxRetries = 5;
     public GameObject mapPrefab;
     private GameObject mapParent;
+    
+    public int multiplier;
 
     [Header("PreSpawns")] 
     public int transitions;
     [SerializeField]
     private List<Vector3> TransitionPositions = new List<Vector3>();
+    
+    public MapGraph graph;
+
+    private int mapNumber = 1;
+
+    
+    private Dictionary<int, GameObject> transitionObjectsByDirection = new Dictionary<int, GameObject>();
+    private Dictionary<Vector3Int, int> transitionGridPositions = new Dictionary<Vector3Int, int>();
     
 
     // ── Internal state ────────────────────────────────────────────────────────
@@ -77,7 +87,9 @@ public class WFCGenerator : MonoBehaviour
     // ── Core algorithm ────────────────────────────────────────────────────────
     private IEnumerator GenerateCoroutine()
 {
-    ClearSpawned();
+    //ClearSpawned();
+    
+    spawnedObjects.Clear();
 
     for (int attempt = 0; attempt < maxRetries; attempt++)
     {
@@ -139,6 +151,7 @@ public class WFCGenerator : MonoBehaviour
     // ── Step 0: Initialise ────────────────────────────────────────────────────
     private void InitialiseGrid()
     {
+        transitionGridPositions.Clear();
         grid = new WFCCell[gridX, gridY, gridZ];
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
@@ -200,6 +213,7 @@ public class WFCGenerator : MonoBehaviour
     
     private bool CollapseTransitions(List<Vector3Int> preCollapsedPositions)
     {
+        
         int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
         int[] prevEdges = new int[transitions];
         for (int i = 0; i < transitions; i++)
@@ -228,8 +242,9 @@ public class WFCGenerator : MonoBehaviour
             while (System.Array.Exists(prevEdges, e => e == edgeType));
             
             prevEdges[i] = edgeType;
+            
 
-            Debug.Log(edgeType);
+            //Debug.Log(edgeType);
 
             var edge = GetEdgeIndex(gridX, gridZ, edgeType);
             int x = edge.row;
@@ -245,8 +260,10 @@ public class WFCGenerator : MonoBehaviour
             cell.collapsed = true;
             cell.collapsedModuleIndex = moduleIndex;
             cell.possibleModules = new List<int> { moduleIndex };
-
+            
             preCollapsedPositions.Add(new Vector3Int(x, 0, z));
+            transitionGridPositions[new Vector3Int(x, 0, z)] = edgeType; 
+            
         }
 
         return true;
@@ -256,13 +273,12 @@ public class WFCGenerator : MonoBehaviour
     {
         if (rows <= 0 || cols <= 0)
             throw new ArgumentException("Matrix dimensions must be positive.");
-
         switch (edgeType)
         {
-            case 0: return (0, Random.Range(0, cols));              // Top row
-            case 1: return (rows - 1, Random.Range(0, cols));       // Bottom row
-            case 2: return (Random.Range(0, rows), 0);              // Left column
-            case 3: return (Random.Range(0, rows), cols - 1);       // Right column
+            case 0: return (0, Random.Range(0, cols));              // -X West
+            case 1: return (rows - 1, Random.Range(0, cols));       // +X East
+            case 2: return (Random.Range(0, rows), 0);              // -Z South
+            case 3: return (Random.Range(0, rows), cols - 1);       // +Z North
             default: throw new Exception("Unexpected edge type");
         }
     }
@@ -365,7 +381,10 @@ public class WFCGenerator : MonoBehaviour
     // ── Step 4: Spawn ─────────────────────────────────────────────────────────
     private void SpawnModules()
     {
-        mapParent = Instantiate(mapPrefab, Vector3.zero, Quaternion.identity);
+        transitionObjectsByDirection.Clear(); // reset from previous generation
+        
+        mapParent = Instantiate(mapPrefab,new Vector3(mapNumber * multiplier,0,0), Quaternion.identity);
+        
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
         for (int z = 0; z < gridZ; z++)
@@ -377,20 +396,22 @@ public class WFCGenerator : MonoBehaviour
             if (module.obj == null) continue;
 
             Vector3 worldPos;
-            if (module.name.ToLower().Contains("stair"))
-            {
-              worldPos = transform.position + new Vector3(x, module.layer + 1, z) * cellSize;
-            }
-            worldPos = transform.position + new Vector3(x, module.layer, z) * cellSize;
-            
-            if(module.name.ToLower().Contains("door"))
-                TransitionPositions.Add(worldPos);
-                
-            
+            //if (module.name.ToLower().Contains("stair"))
+                //worldPos = transform.position + new Vector3(x, module.layer + 1, z) * cellSize;
+            worldPos = mapParent.transform.position + new Vector3(x, module.layer, z) * cellSize;
+
             GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, mapParent.transform);
             spawnedObjects.Add(go);
-            meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
+            //meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
+            
+            Vector3Int gridPos = new Vector3Int(x, y, z);
+            if (transitionGridPositions.TryGetValue(new Vector3Int(x, 0, z), out int direction))
+            {
+                transitionObjectsByDirection[direction] = go;
+            }
+            
         }
+        mapNumber++;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -420,9 +441,10 @@ public class WFCGenerator : MonoBehaviour
     {
         return mapParent;
     }
-
-    public List<Vector3> GetTransitionPositions()
+    
+    public Dictionary<int, GameObject> GetTransitionObjects()
     {
-        return TransitionPositions;
+        return transitionObjectsByDirection;
     }
+    
 }

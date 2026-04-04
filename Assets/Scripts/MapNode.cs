@@ -1,41 +1,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class MapNode 
+//[System.Serializable]
+public class MapNode
 {
-   public MapNode[] neighbors;  
-   public List<Vector3> spawnPositions;
-   
-   public GameObject map;
+    public MapNode[] neighbors = new MapNode[4]; // fixed size 4, null = no door or unvisited
+    public bool[] hasDoor = new bool[4];         // which slots actually have a door
+    public List<GameObject> spawnPositions;
+    public GameObject map;
+    
+    public string name;
 
-   public void SetNeighbors(MapNode[] neighbors)
-   {
-      this.neighbors = neighbors;
-   }
+    public int AmountOfDoors()
+    {
+        int doors = 0;
+        for (int i = 0; i < hasDoor.Length; i++)
+        {
+            if (hasDoor[i])
+                doors++;
+        }
+        return doors;
+    }
 
-   public void SetSpawnPositions(List<Vector3> spawnPositions)
-   {
-      this.spawnPositions = spawnPositions;
-   }
+    public void PrintNeighbors()
+    {
+        Debug.Log("-----------------------------");
+        Debug.Log("Node: " + name);
+        for (int i = 0; i < neighbors.Length; i++)
+        {
+            if (neighbors[i] != null)
+            {
+                Debug.Log("Neighbor id: " + neighbors[i].name);
+            }
+                
+        }
+        Debug.Log("-----------------------------");
+    }
 
-   public void EnterRoom()
-   {
-      EnableRoom();
-   }
-
-   public void ExitRoom()
-   {
-      DisableRoom();
-   }
-
-   private void EnableRoom()
-   {
-      map.SetActive(true);
-   }
-
-   private void DisableRoom()
-   {
-      map.SetActive(false);
-   }
+    public void EnterRoom() => map.SetActive(true);
+    public void ExitRoom()  => map.SetActive(false);
 }
