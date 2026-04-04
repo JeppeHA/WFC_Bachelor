@@ -12,9 +12,10 @@ public class MapGraph : MonoBehaviour
     
     [SerializeField]
     private int maxAmountOfNodes;
-
+    private int[] previousDirections;
+    private int[] currentDirections;
     private int id;
-    
+    private int index = 0;
     private void Start()
     {
         Debug.Log("MapGraph Start");
@@ -26,17 +27,14 @@ public class MapGraph : MonoBehaviour
     }
     public void RequestTransition(MapNode from, int direction)
     {
-        // Safety check - should always match currentNode but good to verify
         if (from != currentNode)
         {
             Debug.LogWarning("Transition triggered from a node that isn't current.");
             return;
         }
-
-        int opposite = (direction + 2) % 4;
+        int opposite = (direction + 2) % currentNode.AmountOfDoors();
         
-
-        SwitchRoom(currentNode.neighbors[direction]);
+        SwitchRoom(currentNode.neighbors[opposite]);
     }
 
     private int GenerateGraph(int n)
@@ -51,6 +49,7 @@ public class MapGraph : MonoBehaviour
         MapNode _node = GenerateNode();
         currentNode = _node;
         int num = 1;
+        index = 0;
        while(taken.Count < _node.AmountOfDoors())
        {
            if(num <= 0)
@@ -63,6 +62,7 @@ public class MapGraph : MonoBehaviour
                 num++;
             }
         }
+       previousDirections = currentDirections;
         
         return (n + _node.AmountOfDoors() + 1); 
     }
@@ -78,22 +78,31 @@ public class MapGraph : MonoBehaviour
         {
             node.hasDoor[i] = true;
         }
-
+        node.map = GenerateRoom(node, doorCount);
+        
         if (nodes.Count >= 1)
         {
+            currentDirections = generator.GetDirections();
             Debug.Log("SetSelfAsNeighbors"); 
-            SetSelfAsNeighbor(node, currentNode);
+            SetSelfAsNeighbor(node, currentNode, index);
         }
-        node.map = GenerateRoom(node, doorCount);
+        else
+        {
+            previousDirections = generator.GetDirections();
+        }
         nodes.Add(node);
+        index++;
         return node;
     }
 
 
-    private void SetSelfAsNeighbor(MapNode src, MapNode dst)
+    private void SetSelfAsNeighbor(MapNode src, MapNode dst, int index)
     {
         Debug.Log("Src: " + src.name + " dst: " + dst.name);
-        for (int i = 0; i < src.neighbors.Length; i++)
+        
+        src.neighbors[currentDirections[index] % 4] = dst;
+        
+       /* for (int i = 0; i < src.neighbors.Length; i++)
         {
             if (src.neighbors[i] != null)
             {
@@ -101,7 +110,9 @@ public class MapGraph : MonoBehaviour
             }
             src.neighbors[i] = dst;
             break;
-        }
+        }*/
+
+       
     }
     
 
@@ -134,6 +145,7 @@ public class MapGraph : MonoBehaviour
 
     private void SwitchRoom(MapNode next)
     {
+        Debug.Log($"Switching to {next.name}");
         currentNode.ExitRoom();
         currentNode = next;
         currentNode.EnterRoom();

@@ -34,7 +34,7 @@ public class WFCGenerator : MonoBehaviour
     public int transitions;
     [SerializeField]
     private List<Vector3> TransitionPositions = new List<Vector3>();
-    
+    private int[] directions = new int[4];
     public MapGraph graph;
 
     private int mapNumber = 1;
@@ -213,7 +213,7 @@ public class WFCGenerator : MonoBehaviour
     
     private bool CollapseTransitions(List<Vector3Int> preCollapsedPositions)
     {
-        
+        directions = new int[4];
         int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
         int[] prevEdges = new int[transitions];
         for (int i = 0; i < transitions; i++)
@@ -265,7 +265,8 @@ public class WFCGenerator : MonoBehaviour
             transitionGridPositions[new Vector3Int(x, 0, z)] = edgeType; 
             
         }
-
+        Array.Reverse(prevEdges);
+        directions = prevEdges;
         return true;
     }
     
@@ -387,7 +388,7 @@ public class WFCGenerator : MonoBehaviour
         
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
-        for (int z = 0; z < gridZ; z++)
+        for (int z = 0; z < gridZ; z++) 
         {
             WFCCell cell = grid[x, y, z];
             if (!cell.collapsed || cell.collapsedModuleIndex < 0) continue;
@@ -445,6 +446,11 @@ public class WFCGenerator : MonoBehaviour
     public Dictionary<int, GameObject> GetTransitionObjects()
     {
         return transitionObjectsByDirection;
+    }
+
+    public int[] GetDirections()
+    {
+        return directions;
     }
     
 }

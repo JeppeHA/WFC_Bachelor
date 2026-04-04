@@ -30,11 +30,12 @@ public class MapNode
         {
             if (neighbors[i] != null)
             {
+                Debug.Log(i);
                 Debug.Log("Neighbor id: " + neighbors[i].name);
             }
                 
         }
-        Debug.Log("-----------------------------");
+        
     }
 
     public void EnterRoom() => map.SetActive(true);
