@@ -292,7 +292,7 @@ public class WFCGenerator : MonoBehaviour
             (list[i], list[j]) = (list[j], list[i]);
         }
     }
-   
+   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
     // ── Step 3: Propagate  ───────────────────────────────────
     private bool Propagate(Vector3Int start)

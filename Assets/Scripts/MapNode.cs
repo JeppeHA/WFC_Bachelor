@@ -34,7 +34,7 @@ public class MapNode
                 Debug.Log("Neighbor id: " + neighbors[i].name);
             }
                 
-        }
+        }  
         
     }
 

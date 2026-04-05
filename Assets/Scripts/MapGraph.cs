@@ -23,7 +23,6 @@ public class MapGraph : MonoBehaviour
         currentNode = nodes[0];
         currentNode.PrintNeighbors();
         nodes[1].PrintNeighbors();
-        nodes[2].PrintNeighbors();
     }
     public void RequestTransition(MapNode from, int direction)
     {
@@ -32,39 +31,37 @@ public class MapGraph : MonoBehaviour
             Debug.LogWarning("Transition triggered from a node that isn't current.");
             return;
         }
-        int opposite = (direction + 2) % currentNode.AmountOfDoors();
+        int opposite = (direction + 2) % 4;
         
         SwitchRoom(currentNode.neighbors[opposite]);
     }
 
-    private int GenerateGraph(int n)
+    private void GenerateGraph(int depth)
     {
-        if (n >= maxAmountOfNodes)
+        if (nodes.Count >= maxAmountOfNodes) return;
+
+        MapNode node = GenerateNode();
+
+        if (nodes.Count == 0)
         {
-            return(0);
+            currentNode = node;
         }
-           
-        
-        HashSet<int> taken = new HashSet<int>();
-        MapNode _node = GenerateNode();
-        currentNode = _node;
-        int num = 1;
-        index = 0;
-       while(taken.Count < _node.AmountOfDoors())
-       {
-           if(num <= 0)
-               break;
-            int index = Random.Range(0, _node.neighbors.Length - num);
-            if (!taken.Contains(index))
-            {
-                taken.Add(index);
-                _node.neighbors[index] = GenerateNode();
-                num++;
-            }
+
+        nodes.Add(node);
+
+        int[] dirs = generator.GetDirections();
+
+        foreach (int dir in dirs)
+        {
+            if (node.neighbors[dir] != null) continue;
+
+            MapNode neighbor = GenerateNode();
+
+            node.neighbors[dir] = neighbor;
+
+            int opposite = (dir + 2) % 4;
+            neighbor.neighbors[opposite] = node;
         }
-       previousDirections = currentDirections;
-        
-        return (n + _node.AmountOfDoors() + 1); 
     }
     
     private MapNode GenerateNode()
@@ -73,7 +70,7 @@ public class MapGraph : MonoBehaviour
         
         node.name = id.ToString();
         id++;
-        int doorCount = 2;//Random.Range(2, 5);
+        int doorCount = 1;//Random.Range(2, 5);
         for (int i = 0; i < doorCount; i++)
         {
             node.hasDoor[i] = true;
@@ -96,23 +93,12 @@ public class MapGraph : MonoBehaviour
     }
 
 
-    private void SetSelfAsNeighbor(MapNode src, MapNode dst, int index)
+    private void SetSelfAsNeighbor(MapNode src, MapNode dst, int direction)
     {
-        Debug.Log("Src: " + src.name + " dst: " + dst.name);
-        
-        src.neighbors[currentDirections[index] % 4] = dst;
-        
-       /* for (int i = 0; i < src.neighbors.Length; i++)
-        {
-            if (src.neighbors[i] != null)
-            {
-                continue;
-            }
-            src.neighbors[i] = dst;
-            break;
-        }*/
+        src.neighbors[direction] = dst;
 
-       
+        int opposite = (direction + 2) % 4;
+        dst.neighbors[opposite] = src;
     }
     
 
