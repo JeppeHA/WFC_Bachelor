@@ -35,6 +35,8 @@ public class WFCGenerator : MonoBehaviour
     [SerializeField]
     private List<Vector3> TransitionPositions = new List<Vector3>();
     private int[] directions = new int[4];
+    private int[] nodeDirections = new int[4];
+    public Vector2Int currentMapCoord;
     public MapGraph graph;
 
     private int mapNumber = 1;
@@ -77,8 +79,9 @@ public class WFCGenerator : MonoBehaviour
     }
 
     [ContextMenu("Generate")]
-    public void Generate()
+    public void Generate(int[] dir)
     {
+        nodeDirections = dir;
         StopAllCoroutines();
         StartCoroutine(GenerateCoroutine());
        
@@ -215,15 +218,16 @@ public class WFCGenerator : MonoBehaviour
     {
         directions = new int[4];
         int baseTransitionIndex = modules.Length - moduleGenerator.numberOfLayers;
-        int[] prevEdges = new int[transitions];
-        for (int i = 0; i < transitions; i++)
+        /*int[] prevEdges = new int[4];
+        for (int i = 0; i < prevEdges.Length; i++)
         {
             prevEdges[i] = -1;
         }
-        List<int> edgePool = new List<int> { 0, 1, 2, 3};
+        List<int> edgePool = new List<int> { 0, 1, 2, 3};*/
 
-        for (int i = 0; i < transitions; i++)
+        for (int i = 0; i < nodeDirections.Length; i++)
         {
+            if(nodeDirections[i] == -1) continue;
             int moduleIndex = baseTransitionIndex + Random.Range(0, moduleGenerator.numberOfLayers);
 
             if (moduleIndex < 0 || moduleIndex >= modules.Length)
@@ -232,7 +236,9 @@ public class WFCGenerator : MonoBehaviour
                 return false;
             }
 
-            int edgeType;
+            int edgeType = nodeDirections[i];
+            /*
+           
 
             // Pick a unique edgeType
             do
@@ -241,10 +247,9 @@ public class WFCGenerator : MonoBehaviour
             }
             while (System.Array.Exists(prevEdges, e => e == edgeType));
             
-            prevEdges[i] = edgeType;
+            prevEdges[edgeType] = edgeType;
+            */
             
-
-            //Debug.Log(edgeType);
 
             var edge = GetEdgeIndex(gridX, gridZ, edgeType);
             int x = edge.row;
@@ -265,8 +270,7 @@ public class WFCGenerator : MonoBehaviour
             transitionGridPositions[new Vector3Int(x, 0, z)] = edgeType; 
             
         }
-        Array.Reverse(prevEdges);
-        directions = prevEdges;
+        //directions = prevEdges;
         return true;
     }
     
@@ -276,7 +280,7 @@ public class WFCGenerator : MonoBehaviour
             throw new ArgumentException("Matrix dimensions must be positive.");
         switch (edgeType)
         {
-            case 0: return (0, Random.Range(0, cols));              // -X West
+            case 0: return (0, Random.Range(0, cols));              // -X West 
             case 1: return (rows - 1, Random.Range(0, cols));       // +X East
             case 2: return (Random.Range(0, rows), 0);              // -Z South
             case 3: return (Random.Range(0, rows), cols - 1);       // +Z North
@@ -292,7 +296,6 @@ public class WFCGenerator : MonoBehaviour
             (list[i], list[j]) = (list[j], list[i]);
         }
     }
-   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
     // ── Step 3: Propagate  ───────────────────────────────────
     private bool Propagate(Vector3Int start)
@@ -382,13 +385,15 @@ public class WFCGenerator : MonoBehaviour
     // ── Step 4: Spawn ─────────────────────────────────────────────────────────
     private void SpawnModules()
     {
-        transitionObjectsByDirection.Clear(); // reset from previous generation
-        
-        mapParent = Instantiate(mapPrefab,new Vector3(mapNumber * multiplier,0,0), Quaternion.identity);
-        
+        transitionObjectsByDirection.Clear();
+
+        float worldOffsetX = currentMapCoord.x * gridX * cellSize;
+        float worldOffsetZ = currentMapCoord.y * gridZ * cellSize;
+        mapParent = Instantiate(mapPrefab, new Vector3(worldOffsetX, 0, worldOffsetZ), Quaternion.identity);
+
         for (int x = 0; x < gridX; x++)
         for (int y = 0; y < gridY; y++)
-        for (int z = 0; z < gridZ; z++) 
+        for (int z = 0; z < gridZ; z++)
         {
             WFCCell cell = grid[x, y, z];
             if (!cell.collapsed || cell.collapsedModuleIndex < 0) continue;
@@ -396,23 +401,14 @@ public class WFCGenerator : MonoBehaviour
             WFCModule module = modules[cell.collapsedModuleIndex];
             if (module.obj == null) continue;
 
-            Vector3 worldPos;
-            //if (module.name.ToLower().Contains("stair"))
-                //worldPos = transform.position + new Vector3(x, module.layer + 1, z) * cellSize;
-            worldPos = mapParent.transform.position + new Vector3(x, module.layer, z) * cellSize;
+            Vector3 worldPos = mapParent.transform.position + new Vector3(x, module.layer, z) * cellSize;
 
             GameObject go = Instantiate(module.obj, worldPos, Quaternion.identity, mapParent.transform);
             spawnedObjects.Add(go);
-            //meshCombiner.AddMeshes(go.transform.GetChild(0).GetComponent<MeshFilter>());
-            
-            Vector3Int gridPos = new Vector3Int(x, y, z);
+
             if (transitionGridPositions.TryGetValue(new Vector3Int(x, 0, z), out int direction))
-            {
                 transitionObjectsByDirection[direction] = go;
-            }
-            
         }
-        mapNumber++;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

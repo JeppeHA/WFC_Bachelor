@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapGraph
   generator: {fileID: 985481018}
-  maxAmountOfNodes: 1
+  maxAmountOfNodes: 3
 --- !u!4 &227630284
 Transform:
   m_ObjectHideFlags: 0
@@ -401,6 +401,7 @@ MonoBehaviour:
   multiplier: 50
   transitions: 4
   TransitionPositions: []
+  currentMapCoord: {x: 0, y: 0}
   graph: {fileID: 0}
 --- !u!4 &985481019
 Transform:

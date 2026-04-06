@@ -5,18 +5,19 @@ using UnityEngine;
 public class MapNode
 {
     public MapNode[] neighbors = new MapNode[4]; // fixed size 4, null = no door or unvisited
-    public bool[] hasDoor = new bool[4];         // which slots actually have a door
-    public List<GameObject> spawnPositions;
+    //public Transition transition;
+    public Dictionary<int, Transition> transitions = new Dictionary<int, Transition>();
     public GameObject map;
-    
+    public Vector2Int graphCoord;
+    public int[] directions;
     public string name;
 
     public int AmountOfDoors()
     {
         int doors = 0;
-        for (int i = 0; i < hasDoor.Length; i++)
+        for (int i = 0; i < neighbors.Length; i++)
         {
-            if (hasDoor[i])
+            if (neighbors[i] != null)
                 doors++;
         }
         return doors;
@@ -26,6 +27,7 @@ public class MapNode
     {
         Debug.Log("-----------------------------");
         Debug.Log("Node: " + name);
+        Debug.Log("Amount: " + AmountOfDoors());
         for (int i = 0; i < neighbors.Length; i++)
         {
             if (neighbors[i] != null)
