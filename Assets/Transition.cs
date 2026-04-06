@@ -6,25 +6,51 @@ public class Transition : MonoBehaviour
 {
     public MapNode ownerNode;
     public int direction; // 0=West, 1=East, 2=South, 3=North
-    public bool switchRoom = false;
-    public bool switchActivated = false;
-    [SerializeField] private float tick;
+    [SerializeField]
+    private bool switchingRoom = false;
+    [SerializeField]
+    private GameObject player;
+
+    private void Start()
+    {
+        player = GameObject.FindWithTag("Player");
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
-        MapGraph mapGraph = FindObjectOfType<MapGraph>();
-        mapGraph.RequestTransition(ownerNode, direction);
+        if (!other.CompareTag("Player") || switchingRoom) return; 
+        DoTransition();
     }
 
-    private void Update()
+    private void DoTransition()
     {
-        if (switchActivated)
-        {
-            switchActivated = false;
-            StartCoroutine(checkForSwitchRoom());
-        }
+        switchingRoom = true;
+        int opposite = (direction + 2) % 4;
+        ownerNode.neighbors[direction].transitions[opposite].SetSwitch(true);
+
+        MapGraph mapGraph = FindObjectOfType<MapGraph>();
+        Vector3 spawnPosition = ownerNode.neighbors[direction].transitions[opposite].transform.position;
+    
+        Debug.Log("Before RequestTransition: " + player.transform.position);
+        mapGraph.RequestTransition(ownerNode, direction);
+        Debug.Log("After RequestTransition: " + player.transform.position);
+    
+        player.transform.position = spawnPosition;
+        Debug.Log("After teleport: " + player.transform.position);
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Player")) return;
+        switchingRoom = false;
+    }
+
+    public void SetSwitch(bool state)
+    {
+        switchingRoom = state;
+    }
+
+    /*
     private IEnumerator checkForSwitchRoom()
     {
         if (switchRoom)
@@ -36,4 +62,5 @@ public class Transition : MonoBehaviour
         if(switchRoom)
             StartCoroutine(checkForSwitchRoom());
     }
+    */
 }
