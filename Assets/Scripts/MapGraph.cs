@@ -9,31 +9,29 @@
     {
 
         public List<MapNode> nodes = new List<MapNode>();
+        //public List
+        private int graphIndex = 0;
         private MapNode currentNode;
-        public WFCGenerator generator;
+        private WFCGenerator generator;
+        private Location location;
+
+        private MapNode PreviousConnectorNode;
         
-        [SerializeField]
         private int maxAmountOfNodes;
         private int[] previousDirections;
 
         private int id;
         private int index = 0;
-        private void Start()
+
+        public void StartGeneration()
         {
             Debug.Log("MapGraph Start");
             GenerateGraph();
             currentNode = nodes[0];
-            foreach (var node in nodes)
-            {
-                node.PrintNeighbors();
-            }
+            currentNode.EnterRoom();
+            //nodes[nodes.Count - 1].PrintNeighbors();
         }
-
-        private void Update()
-        {
-            Debug.Log($"CURRENT NODE: {currentNode.name}");
-        }
-
+        
         public void RequestTransition(MapNode from, int direction)
         {
             if (from != currentNode)
@@ -59,6 +57,19 @@
             Queue<MapNode> queue = new Queue<MapNode>();
 
             MapNode startNode = GenerateNode();
+            if (graphIndex > 0)
+            {
+                startNode.isConnector = true;
+                Debug.Log($"previous connector {PreviousConnectorNode}");
+                foreach (int dir in PreviousConnectorNode.directions)
+                {
+                    if(dir == -1) continue;
+                    if(PreviousConnectorNode.neighbors[dir] != null) continue;
+                    int opposite = (dir + 2) % 4;
+                    startNode.neighbors[opposite] = PreviousConnectorNode;
+                }
+            }
+                
             nodes.Add(startNode);
             currentNode = startNode;
             queue.Enqueue(startNode);
@@ -69,6 +80,7 @@
 
                 foreach (int dir in new int[] { 0, 1, 2, 3 })
                 {
+
                     if (node.neighbors[dir] != null) continue;
                     if (nodes.Count >= maxAmountOfNodes) break;
                     if (Random.value > 0.5f) continue;
@@ -95,7 +107,7 @@
         {
             MapNode node = new MapNode();
             
-            node.name = id.ToString();
+            node.name = graphIndex + "." + id;
             id++;
             int remaining = maxAmountOfNodes - nodes.Count;
 
@@ -221,8 +233,9 @@
                
 
             node.directions = directions;
-            generator.currentMapCoord = node.graphCoord;
+           // generator.currentMapCoord = node.graphCoord;
             node.map = GenerateRoom(node, validDirs.Count, directions);
+           // node.ExitRoom();
         }
         
         
@@ -234,6 +247,26 @@
             currentNode = next;
             currentNode.EnterRoom();
             
+        }
+
+        public void SetMaxAmountOfNodes(int amount)
+        {
+            maxAmountOfNodes = amount;
+        }
+
+        public void SetGenerator(WFCGenerator newGenerator)
+        {
+            generator = newGenerator;
+        }
+
+        public void SetGraphIndex(int graphIndex)
+        {
+            this.graphIndex = graphIndex;
+        }
+
+        public void SetPreviousConnectorNode(MapNode previousNode)
+        {
+            PreviousConnectorNode = previousNode;
         }
         
         

@@ -19,7 +19,7 @@ public class Transition : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player") || switchingRoom) return; 
-        DoTransition();
+        //DoTransition();
     }
 
     private void DoTransition()
