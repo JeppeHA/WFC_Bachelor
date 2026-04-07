@@ -6,6 +6,7 @@ public class MapNode
 {
     public MapNode[] neighbors = new MapNode[4]; // fixed size 4, null = no door or unvisited
     //public Transition transition;
+    public bool isConnector = false;
     public Dictionary<int, Transition> transitions = new Dictionary<int, Transition>();
     public GameObject map;
     public Vector2Int graphCoord;

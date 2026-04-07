@@ -62,8 +62,7 @@
             nodes.Add(startNode);
             currentNode = startNode;
             queue.Enqueue(startNode);
-
-            // ── Phase 1: Build graph structure only ──────────────────
+            
             while (queue.Count > 0 && nodes.Count < maxAmountOfNodes)
             {
                 MapNode node = queue.Dequeue();
@@ -74,7 +73,7 @@
                     if (nodes.Count >= maxAmountOfNodes) break;
                     if (Random.value > 0.5f) continue;
 
-                    MapNode neighbor = GenerateNode(node, dir);
+                    MapNode neighbor = GenerateNode();
                     node.neighbors[dir] = neighbor;
 
                     int opposite = (dir + 2) % 4;
@@ -87,11 +86,12 @@
             
             AssignGraphCoordinates(); 
             
+            nodes[nodes.Count - 1].isConnector = true;
             foreach (var node in nodes)
                 FinalizeNode(node);
         }
         
-        private MapNode GenerateNode(MapNode parent = null, int incomingDir = -1)
+        private MapNode GenerateNode()
         {
             MapNode node = new MapNode();
             
@@ -100,24 +100,25 @@
             int remaining = maxAmountOfNodes - nodes.Count;
 
             // Always allow at least 1 (for parent connection)
-            int maxDoors = Mathf.Clamp(remaining, 1, 4);
-
-            int doorCount = Random.Range(1, maxDoors + 1);
+            //int maxDoors = Mathf.Clamp(remaining, 1, 4);
+            //int doorCount = Random.Range(1, maxDoors + 1);
             //int doorCount = Random.Range(1, 5);
 
             node.directions = new int[4] { -1, -1, -1, -1 };
             Debug.Log($"nodes count {nodes.Count}");
-            /*
-            if (nodes.Count >= 1)
-            {
-               // currentDirections = generator.GetDirections();
-               
-               // SetSelfAsNeighbor(node, currentNode, currentNode.transition.direction);
-            }
-            else
-            {
-               // previousDirections = generator.GetDirections();
-            }*/
+            
+            return node;
+        }
+
+        private MapNode ConnectNode(MapNode dst)
+        {
+            MapNode node = new MapNode();
+            
+            node.name = id.ToString();
+            id++;
+            
+            //node. = nodes[nodes.Count - 1];
+            
             
             return node;
         }
@@ -164,14 +165,6 @@
         }
 
 
-        private void SetSelfAsNeighbor(MapNode src, MapNode dst, int dir)
-        {
-            src.neighbors[dir] = dst;
-            int opposite = (dir + 2) % 4;
-            dst.neighbors[opposite] = src;
-        }
-
-
         private GameObject GenerateRoom(MapNode node, int doorCount, int[] directions) 
         {
             generator.modules = generator.moduleGenerator.GetModules().ToArray();
@@ -200,32 +193,6 @@
                 node.transitions[direction] = t; 
             }
         }
-
-        private int[] GenerateDirections(int n, MapNode parent, int incomingDir)
-        {
-            int[] dirs = new int[4] { -1, -1, -1, -1 };
-            List<int> available = new List<int> { 0, 1, 2, 3 };
-
-            // Force connection back to parent
-            if (parent != null && incomingDir != -1)
-            {
-                int opposite = (incomingDir + 2) % 4;
-                dirs[opposite] = opposite;
-                available.Remove(opposite);
-            }
-
-            // Fill remaining randomly
-            for (int i = 0; i < n && available.Count > 0; i++)
-            {
-                int randIndex = Random.Range(0, available.Count);
-                int dir = available[randIndex];
-
-                dirs[dir] = dir;
-                available.RemoveAt(randIndex);
-            }
-
-            return dirs;
-        }
         
         private void FinalizeNode(MapNode node)
         {
@@ -237,25 +204,28 @@
                     validDirs.Add(i);
             }
 
+            for (int i = 0; i < 4; i++)
+            {
+                if(!node.isConnector) break;
+                if(node.neighbors[i] != null) continue;
+                validDirs.Add(i);
+                break;
+            }
+
             int[] directions = new int[4] { -1, -1, -1, -1 };
 
             foreach (int dir in validDirs)
+            {
                 directions[dir] = dir;
+            }
+               
 
             node.directions = directions;
             generator.currentMapCoord = node.graphCoord;
             node.map = GenerateRoom(node, validDirs.Count, directions);
         }
-
-        private bool IsNeighbors(MapNode from, MapNode to)
-        {
-            for (int i = 0; i < from.neighbors.Length; i++)
-            {
-                if (from.neighbors[i] == to)
-                    return true;
-            }
-            return false;
-        }
+        
+        
 
         private void SwitchRoom(MapNode next)
         {

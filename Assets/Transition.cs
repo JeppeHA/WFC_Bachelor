@@ -24,6 +24,7 @@ public class Transition : MonoBehaviour
 
     private void DoTransition()
     {
+        player.transform.position = Vector3.zero;
         switchingRoom = true;
         int opposite = (direction + 2) % 4;
         ownerNode.neighbors[direction].transitions[opposite].SetSwitch(true);
@@ -34,7 +35,7 @@ public class Transition : MonoBehaviour
         Debug.Log("Before RequestTransition: " + player.transform.position);
         mapGraph.RequestTransition(ownerNode, direction);
         Debug.Log("After RequestTransition: " + player.transform.position);
-    
+        Debug.Log("New position: " + spawnPosition);
         player.transform.position = spawnPosition;
         Debug.Log("After teleport: " + player.transform.position);
     }

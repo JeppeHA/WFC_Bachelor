@@ -38,6 +38,7 @@ public class WFCGenerator : MonoBehaviour
     private int[] nodeDirections = new int[4];
     public Vector2Int currentMapCoord;
     public MapGraph graph;
+    private int mapCount = 0;
 
     private int mapNumber = 1;
 
@@ -386,9 +387,9 @@ public class WFCGenerator : MonoBehaviour
     private void SpawnModules()
     {
         transitionObjectsByDirection.Clear();
-
-        float worldOffsetX = currentMapCoord.x * gridX * cellSize;
-        float worldOffsetZ = currentMapCoord.y * gridZ * cellSize;
+        mapCount++;
+        float worldOffsetX = mapCount * multiplier;//currentMapCoord.x * gridX * cellSize;
+        float worldOffsetZ = mapCount * multiplier; //currentMapCoord.y * gridZ * cellSize;
         mapParent = Instantiate(mapPrefab, new Vector3(worldOffsetX, 0, worldOffsetZ), Quaternion.identity);
 
         for (int x = 0; x < gridX; x++)
