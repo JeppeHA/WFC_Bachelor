@@ -19,17 +19,23 @@ public class Transition : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player") || switchingRoom) return; 
-        //DoTransition();
+        DoTransition();
     }
 
     private void DoTransition()
     {
-        player.transform.position = Vector3.zero;
         switchingRoom = true;
         int opposite = (direction + 2) % 4;
         ownerNode.neighbors[direction].transitions[opposite].SetSwitch(true);
 
-        MapGraph mapGraph = FindObjectOfType<MapGraph>();
+        GraphOrganiser graphOrganiser = FindObjectOfType<GraphOrganiser>();
+        MapGraph mapGraph = graphOrganiser.graphs[0];
+        foreach (var graph in graphOrganiser.graphs)
+        {
+            if(graph.nodes.Contains(ownerNode)){}
+                mapGraph = graph; break;
+            
+        }
         Vector3 spawnPosition = ownerNode.neighbors[direction].transitions[opposite].transform.position;
     
         Debug.Log("Before RequestTransition: " + player.transform.position);

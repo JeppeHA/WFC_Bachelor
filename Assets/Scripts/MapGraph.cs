@@ -10,7 +10,7 @@
 
         public List<MapNode> nodes = new List<MapNode>();
         //public List
-        private int graphIndex = 0;
+        public int graphIndex = 0;
         private MapNode currentNode;
         private WFCGenerator generator;
         private Location location;
@@ -268,6 +268,8 @@
         {
             PreviousConnectorNode = previousNode;
         }
+        
+        
         
         
     }

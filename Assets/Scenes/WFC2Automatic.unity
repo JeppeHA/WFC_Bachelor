@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39201a284b62d6c488ddca0ea26fc84a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapGraph
+  graphIndex: 0
 --- !u!4 &227630284
 Transform:
   m_ObjectHideFlags: 0
@@ -814,7 +815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292b2ce441f44a047bb684a1ab52f08e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GraphOrganiser
-  maxAmountOfNodesForGraph: 5
+  maxAmountOfNodesForGraph: 2
   graphPrefab: {fileID: 1903275631424921699, guid: bfada497454059c4788e054561eb7164, type: 3}
   generator: {fileID: 985481018}
   graphs: []
